@@ -106,11 +106,19 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
           return; // Only a banker or the modified player can change their name
         }
         break;
-      case "playerColorChange":
+      case "playerColorChange": {
         if (!isPlayerBanker && playerId !== event.playerId) {
           return; // Only a banker or the modified player can change their color
         }
+        // Check if another player already has this color
+        const colorTakenByAnother = game
+          .getGameState()
+          .players.some((p) => p.playerId !== event.playerId && p.color === event.color);
+        if (colorTakenByAnother) {
+          return; // Color is already taken by another player
+        }
         break;
+      }
       case "playerDelete":
         if (!isPlayerBanker && playerId !== event.playerId) {
           return; // Only a banker or the player themselves can remove a player from the game

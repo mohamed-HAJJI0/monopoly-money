@@ -205,22 +205,28 @@ const Settings: React.FC<ISettingsProps> = ({
               </td>
               <td>
                 <div className="d-flex flex-wrap" style={{ maxWidth: 120 }}>
-                  {PRESET_PLAYER_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => proposePlayerColorChange(player.playerId, c)}
-                      style={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: c,
-                        border: player.color === c ? "2px solid #000" : "1px solid transparent",
-                        cursor: "pointer",
-                        margin: 1
-                      }}
-                      aria-label={`Change color to ${c}`}
-                    />
-                  ))}
+                  {PRESET_PLAYER_COLORS.map((c) => {
+                    const isTaken = players.some((p) => p.playerId !== player.playerId && p.color === c);
+                    const isCurrent = player.color === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => !isTaken && proposePlayerColorChange(player.playerId, c)}
+                        disabled={isTaken}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          backgroundColor: c,
+                          border: isCurrent ? "2px solid #000" : "1px solid transparent",
+                          cursor: isTaken ? "not-allowed" : "pointer",
+                          opacity: isTaken ? 0.3 : 1,
+                          margin: 1
+                        }}
+                        aria-label={isTaken ? `Color ${c} taken` : `Change color to ${c}`}
+                      />
+                    );
+                  })}
                 </div>
               </td>
               <td>{player.name}</td>

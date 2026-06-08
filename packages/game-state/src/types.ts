@@ -47,7 +47,7 @@ export interface IPlayerJoinEvent extends IGameEvent {
   type: "playerJoin";
   playerId: PlayerId;
   name: string;
-  color: string;
+  color?: string;
 }
 
 export interface IPlayerDeleteEvent extends IGameEvent {

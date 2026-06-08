@@ -4,7 +4,7 @@ import { createUniqueGameId } from "./utils";
 class GameStore {
   private games: Record<string, Game> = {};
 
-  public createGame(initialBankersName: string, role: "player" | "banker" = "player", color?: string) {
+  public createGame(initialBankersName: string, role: "player" | "banker" = "player") {
     // Generate a game id
     const gameId = createUniqueGameId(Object.keys(this.games));
 
@@ -21,7 +21,7 @@ class GameStore {
       return { gameId, userToken, playerId };
     }
 
-    const { userToken, playerId } = game.addPlayer(initialBankersName, color);
+    const { userToken, playerId } = game.addPlayer(initialBankersName);
     game.setPlayerBankerStatus(playerId, true, playerId);
 
     // Return the new game id and the users userToken

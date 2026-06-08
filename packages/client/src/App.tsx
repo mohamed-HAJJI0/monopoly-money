@@ -125,6 +125,7 @@ const App: React.FC = () => {
                 freeParkingBalance={game.freeParkingBalance}
                 showOppositionBalances={game.showOppositionBalances}
                 proposeTransaction={game.actions.proposeTransaction}
+                proposePlayerColorChange={game.actions.proposePlayerColorChange}
                 events={game.events}
               />
             )

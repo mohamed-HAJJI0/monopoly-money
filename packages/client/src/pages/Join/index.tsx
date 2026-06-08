@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 import NumberFormat, { NumberFormatValues } from "react-number-format";
-import { PRESET_PLAYER_COLORS } from "@monopoly-money/game-state";
+
 import { createGame, joinGame } from "../../api";
 import Config from "../../config";
 import useStoredGames from "../../hooks/useStoredGames";
@@ -20,7 +20,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   const [gameId, setGameId] = useState(getGameIdFromQueryString() ?? "");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"player" | "banker">("player");
-  const [color, setColor] = useState<string>(PRESET_PLAYER_COLORS[0]);
+
   const [gameError, setGameError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [hasServerError, setHasServerError] = useState(false);
@@ -42,7 +42,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
 
       // Create game
       setLoading(true);
-      createGame(name, role, role === "player" ? color : undefined)
+      createGame(name, role)
         .then((result) => {
           onGameSetup(result.gameId, result.userToken, result.playerId, role);
           trackGameCreated();
@@ -67,7 +67,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
 
       // Join game
       setLoading(true);
-      joinGame(gameId, name, color)
+      joinGame(gameId, name)
         .then((result) => {
           if (result === "DoesNotExist") {
             setGameError("That game does not exist");
@@ -128,29 +128,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
         </Form.Group>
       )}
 
-      {(!newGame || role === "player") && (
-        <Form.Group className="mt-3">
-          <Form.Label>Pick Your Color</Form.Label>
-          <div className="d-flex justify-content-center flex-wrap gap-2">
-            {PRESET_PLAYER_COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  backgroundColor: c,
-                  border: color === c ? "3px solid #000" : "2px solid transparent",
-                  cursor: "pointer",
-                  boxShadow: color === c ? "0 0 0 2px #fff, 0 0 0 4px " + c : "none"
-                }}
-                aria-label={`Select color ${c}`}
-              />
-            ))}
-          </div>
-        </Form.Group>
-      )}
+
 
       {newGame && (
         <Form.Group className="mt-3">

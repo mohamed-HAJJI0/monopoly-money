@@ -132,19 +132,22 @@ const Bank: React.FC<IBankProps> = ({
 
   const renderPlayerCard = (player: IGameStatePlayer) => {
     const inputVal = customInputs[player.playerId] || "";
+    const takenColors = players
+      .filter((p) => p.playerId !== player.playerId && p.color)
+      .map((p) => p.color!);
 
     return (
       <Card
         key={player.playerId}
         className={`player-card ${layout}`}
-        style={{ borderLeft: `5px solid ${player.color}` }}
+        style={{ borderLeft: `5px solid ${player.color ?? "#9e9e9e"}` }}
       >
         <Card.Body className="p-2">
           <div className="d-flex justify-content-between align-items-center mb-2">
             <div className="d-flex align-items-center">
               <div
                 className="color-dot mr-2"
-                style={{ backgroundColor: player.color }}
+                style={{ backgroundColor: player.color ?? "#9e9e9e" }}
               />
               <strong>{player.name}</strong>
               {player.banker && <span className="ml-1 text-muted">(Banker)</span>}
@@ -153,22 +156,28 @@ const Bank: React.FC<IBankProps> = ({
           </div>
 
           <div className="color-picker mb-2">
-            {PRESET_PLAYER_COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => proposePlayerColorChange(player.playerId, c)}
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  backgroundColor: c,
-                  border: player.color === c ? "2px solid #000" : "1px solid transparent",
-                  cursor: "pointer",
-                  margin: 2
-                }}
-                aria-label={`Change color to ${c}`}
-              />
-            ))}
+            {PRESET_PLAYER_COLORS.map((c) => {
+              const isTaken = takenColors.includes(c);
+              const isCurrent = player.color === c;
+              return (
+                <button
+                  key={c}
+                  onClick={() => !isTaken && proposePlayerColorChange(player.playerId, c)}
+                  disabled={isTaken}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    backgroundColor: c,
+                    border: isCurrent ? "2px solid #000" : "1px solid transparent",
+                    cursor: isTaken ? "not-allowed" : "pointer",
+                    opacity: isTaken ? 0.3 : 1,
+                    margin: 2
+                  }}
+                  aria-label={isTaken ? `Color ${c} taken` : `Change color to ${c}`}
+                />
+              );
+            })}
           </div>
 
           <div className={`action-buttons ${buttonSize}`}>
