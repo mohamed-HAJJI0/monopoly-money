@@ -2,7 +2,9 @@ import { IGameStatePlayer } from "@monopoly-money/game-state";
 import React, { useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { useModal } from "react-modal-hook";
+import QRCode from "react-qr-code";
 import ConnectedStateDot from "../../components/ConnectedStateDot";
+import ThemeToggle from "../../components/ThemeToggle";
 import {
   formatCurrency,
   sortPlayersByName,
@@ -23,6 +25,7 @@ interface ISettingsProps {
   useFreeParking: boolean;
   showOppositionBalances: boolean;
   players: IGameStatePlayer[];
+  gameId: string;
   proposePlayerNameChange: (playerId: string, name: string) => void;
   proposePlayerDelete: (playerId: string) => void;
   proposeGameOpenStateChange: (open: boolean) => void;
@@ -36,6 +39,7 @@ const Settings: React.FC<ISettingsProps> = ({
   useFreeParking,
   showOppositionBalances,
   players,
+  gameId,
   proposePlayerNameChange,
   proposePlayerDelete,
   proposeGameOpenStateChange,
@@ -108,8 +112,23 @@ const Settings: React.FC<ISettingsProps> = ({
     proposeGameOpenStateChange(!isGameOpen);
   };
 
+  const shareLink = `${window.location.origin}/join?gameId=${gameId}`;
+
   return (
     <div className="settings">
+      {isGameOpen && (
+        <div className="qr-section text-center mb-4 p-3 rounded border">
+          <h5>Invite Players</h5>
+          <p className="text-muted mb-2">Scan the QR code to join</p>
+          <div className="d-flex justify-content-center">
+            <QRCode value={shareLink} size={160} />
+          </div>
+          <div className="mt-2">
+            <small className="text-muted">Game ID: <strong>{gameId}</strong></small>
+          </div>
+        </div>
+      )}
+
       <Table striped bordered hover size="sm">
         <thead>
           <tr>
@@ -176,6 +195,10 @@ const Settings: React.FC<ISettingsProps> = ({
       <Button block variant="danger" onClick={() => showEndGameConfirmModal()}>
         End Game
       </Button>
+
+      <div className="mt-4">
+        <ThemeToggle block />
+      </div>
 
       <div className="mt-5 text-center">
         <div>

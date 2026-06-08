@@ -12,7 +12,10 @@ import "./History.scss";
 
 interface IHistoryProps {
   events: GameEvent[];
+  role: "player" | "banker";
 }
+
+const BANKER_HOST_PLAYER_ID = "banker-host";
 
 const History: React.FC<IHistoryProps> = ({ events }) => {
   let currentGameState = defaultGameState;
@@ -62,6 +65,14 @@ const getEventDetails = (
   previousState: IGameState,
   nextState: IGameState
 ): IEventDetail | null => {
+  const getPlayerName = (playerId: string, state: IGameState = nextState): string | null => {
+    if (playerId === BANKER_HOST_PLAYER_ID) {
+      return "Bank Manager";
+    }
+    const player = state.players.find((p) => p.playerId === playerId);
+    return player?.name ?? null;
+  };
+
   const defaults = {
     id: `${event.type + event.time}`,
     time: DateTime.fromISO(event.time).toFormat("h:mm a")
@@ -80,11 +91,11 @@ const getEventDetails = (
 
     case "playerBankerStatusChange": {
       const player = nextState.players.find((p) => p.playerId === event.playerId)!;
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
       return {
         ...defaults,
         title: "Player Banker Status Change",
-        actionedBy: actionedBy.name,
+        actionedBy,
         detail: `${player.name} was made a banker`,
         colour: "yellow"
       };
@@ -103,11 +114,12 @@ const getEventDetails = (
           : event.from === "freeParking"
             ? freeParkingName
             : nextState.players.find((p) => p.playerId === event.from)!.name;
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
+      const fromPlayerId = event.actionedBy;
       return {
         ...defaults,
         title: `Transaction`,
-        actionedBy: actionedBy.playerId === event.from ? null : actionedBy.name,
+        actionedBy: fromPlayerId === event.from ? null : actionedBy,
         detail: `${playerGiving} → ${playerReceiving} (${formatCurrency(event.amount)})`,
         colour: "green"
       };
@@ -120,11 +132,11 @@ const getEventDetails = (
       const playerNameAfterRename = nextState.players.find(
         (p) => p.playerId === event.playerId
       )!.name;
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
       return {
         ...defaults,
         title: "Player Name Change",
-        actionedBy: actionedBy.playerId === event.playerId ? null : actionedBy.name,
+        actionedBy: event.actionedBy === event.playerId ? null : actionedBy,
         detail: `${playerNameBeforeRename} was renamed to ${playerNameAfterRename}`,
         colour: "orange"
       };
@@ -132,33 +144,33 @@ const getEventDetails = (
 
     case "playerDelete": {
       const playerName = previousState.players.find((p) => p.playerId === event.playerId)!.name;
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
       return {
         ...defaults,
         title: "Player Removal",
-        actionedBy: actionedBy.playerId === event.playerId ? null : actionedBy.name,
+        actionedBy: event.actionedBy === event.playerId ? null : actionedBy,
         detail: `${playerName} was removed from the game`,
         colour: "red"
       };
     }
 
     case "gameOpenStateChange": {
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
       return {
         ...defaults,
         title: "Game Open State Change",
-        actionedBy: actionedBy.name,
+        actionedBy,
         detail: `The game is now ${event.open ? "open" : "closed"} to new players`,
         colour: "blue"
       };
     }
 
     case "useFreeParkingChange": {
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
       return {
         ...defaults,
         title: "Use Free Parking State Change",
-        actionedBy: actionedBy.name,
+        actionedBy,
         detail: `The Free Parking house rule is now ${
           event.useFreeParking ? "enabled" : "disabled"
         }`,
@@ -167,11 +179,11 @@ const getEventDetails = (
     }
 
     case "showOppositionBalancesChange": {
-      const actionedBy = previousState.players.find((p) => p.playerId === event.actionedBy)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
       return {
         ...defaults,
         title: "Show Opposition Balances State Change",
-        actionedBy: actionedBy.name,
+        actionedBy,
         detail: `Opposition balances are now ${event.showOppositionBalances ? "shown" : "hidden"}`,
         colour: "blue"
       };
@@ -179,13 +191,6 @@ const getEventDetails = (
 
     case "playerConnectionChange": {
       // Don't show these as they will pollute the history
-      // const playerName = previousState.players.find((p) => p.playerId === event.playerId)!.name;
-      // return {
-      //   id: `${event.type + event.time}`,
-      //   title: "Player's Connection",
-      //   detail: `${playerName} ${event.connected ? "connected to" : "disconnected from"} the game`,
-      //   colour: "teal"
-      // };
       return null;
     }
   }

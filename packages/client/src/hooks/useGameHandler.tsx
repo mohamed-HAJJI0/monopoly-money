@@ -9,11 +9,13 @@ export interface IGameHandlerAuthInfo {
   gameId: string;
   userToken: string;
   playerId: string;
+  role: "player" | "banker";
 }
 
 export interface IGameHandlerState extends IGameState {
   gameId: string;
   playerId: string;
+  role: "player" | "banker";
   isBanker: boolean;
   events: GameEvent[];
   actions: {
@@ -61,7 +63,7 @@ const useGameHandler = (): {
   };
 
   // Create / destroy the game handler when new new auth is provided
-  const initializeGame = ({ gameId, userToken, playerId }: IGameHandlerAuthInfo) => {
+  const initializeGame = ({ gameId, userToken, playerId, role }: IGameHandlerAuthInfo) => {
     // If auth has been provided, setup the game handler
     const onGameStateChange = (gameEnded: boolean) => {
       if (gameEnded) {
@@ -71,7 +73,7 @@ const useGameHandler = (): {
       }
     };
     setGameHandler(
-      new GameHandler(gameId, userToken, playerId, onGameStateChange, onDisplayMessage)
+      new GameHandler(gameId, userToken, playerId, role, onGameStateChange, onDisplayMessage)
     );
   };
 
@@ -92,7 +94,8 @@ const useGameHandler = (): {
         : {
             gameId: gameHandler.gameId,
             userToken: gameHandler.userToken,
-            playerId: gameHandler.playerId
+            playerId: gameHandler.playerId,
+            role: gameHandler.role
           },
     game:
       gameHandler === null
@@ -101,6 +104,7 @@ const useGameHandler = (): {
             ...gameHandler.getState(),
             gameId: gameHandler.gameId,
             playerId: gameHandler.playerId,
+            role: gameHandler.role,
             isBanker: gameHandler.amIABanker(),
             events: gameHandler.getEvents(),
             actions: {

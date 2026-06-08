@@ -12,7 +12,7 @@ import { formatCurrency } from "../../utils";
 import "./Home.scss";
 
 interface IHomeProps {
-  onGameSetup: (gameId: string, userToken: string, playerId: string) => void;
+  onGameSetup: (gameId: string, userToken: string, playerId: string, role?: "player" | "banker") => void;
 }
 
 const Home: React.FC<IHomeProps> = ({ onGameSetup }) => {
@@ -45,7 +45,7 @@ const Home: React.FC<IHomeProps> = ({ onGameSetup }) => {
           <div className="active-game-cards">
             {storedGames
               .sort((a, b) => (a.time > b.time ? -1 : 1))
-              .map(({ gameId, userToken, playerId, status, time }) => (
+              .map(({ gameId, userToken, playerId, status, time, role }) => (
                 <Card key={gameId} className="mb-1">
                   <Card.Body className="p-2">
                     <div className="text-left">
@@ -82,7 +82,7 @@ const Home: React.FC<IHomeProps> = ({ onGameSetup }) => {
                       block
                       size="sm"
                       variant="outline-primary"
-                      onClick={() => onGameSetup(gameId, userToken, playerId)}
+                      onClick={() => onGameSetup(gameId, userToken, playerId, role ?? "player")}
                       className="mt-2"
                     >
                       Join Game

@@ -1,10 +1,334 @@
+/* ============================================
+   MONOPOLY MONEY THEME SYSTEM
+   ============================================ */
+
+/* Base variables */
+:root {
+  --body-bg: #f8f9fa;
+  --body-color: #212529;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.125);
+  --navbar-bg: #f8f9fa;
+  --navbar-color: rgba(0, 0, 0, 0.65);
+  --input-bg: #ffffff;
+  --input-color: #495057;
+  --input-border: #ced4da;
+  --table-bg: transparent;
+  --table-color: #212529;
+  --table-border: #dee2e6;
+  --modal-bg: #ffffff;
+  --modal-color: #212529;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --light: #f8f9fa;
+  --dark: #343a40;
+  --blue: #007bff;
+  --red: #dc3545;
+  --orange: #fd7e14;
+  --yellow: #ffc107;
+  --green: #28a745;
+  --cyan: #17a2b8;
+  --link-color: #007bff;
+  --hr-border: rgba(0, 0, 0, 0.1);
+  --text-muted: #6c757d;
+  --shadow-color: rgba(0, 0, 0, 0.075);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --body-bg: #1a1d21;
+  --body-color: #e9ecef;
+  --card-bg: #252a2e;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --navbar-bg: #252a2e;
+  --navbar-color: rgba(255, 255, 255, 0.8);
+  --input-bg: #2d333b;
+  --input-color: #e9ecef;
+  --input-border: #444c56;
+  --table-bg: transparent;
+  --table-color: #e9ecef;
+  --table-border: #444c56;
+  --modal-bg: #252a2e;
+  --modal-color: #e9ecef;
+  --primary: #58a6ff;
+  --secondary: #8b949e;
+  --success: #3fb950;
+  --danger: #f85149;
+  --warning: #d29922;
+  --info: #58a6ff;
+  --light: #21262d;
+  --dark: #c9d1d9;
+  --blue: #58a6ff;
+  --red: #f85149;
+  --orange: #ffab70;
+  --yellow: #d29922;
+  --green: #3fb950;
+  --cyan: #39c5cf;
+  --link-color: #58a6ff;
+  --hr-border: rgba(255, 255, 255, 0.1);
+  --text-muted: #8b949e;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Midnight theme */
+[data-theme="midnight"] {
+  --body-bg: #0f172a;
+  --body-color: #cbd5e1;
+  --card-bg: #1e293b;
+  --card-border: rgba(148, 163, 184, 0.15);
+  --navbar-bg: #1e293b;
+  --navbar-color: rgba(203, 213, 225, 0.9);
+  --input-bg: #334155;
+  --input-color: #e2e8f0;
+  --input-border: #475569;
+  --table-bg: transparent;
+  --table-color: #cbd5e1;
+  --table-border: #334155;
+  --modal-bg: #1e293b;
+  --modal-color: #cbd5e1;
+  --primary: #818cf8;
+  --secondary: #94a3b8;
+  --success: #34d399;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --info: #38bdf8;
+  --light: #1e293b;
+  --dark: #e2e8f0;
+  --blue: #818cf8;
+  --red: #f87171;
+  --orange: #fb923c;
+  --yellow: #fbbf24;
+  --green: #34d399;
+  --cyan: #22d3ee;
+  --link-color: #818cf8;
+  --hr-border: rgba(148, 163, 184, 0.15);
+  --text-muted: #94a3b8;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Forest theme */
+[data-theme="forest"] {
+  --body-bg: #ecfdf5;
+  --body-color: #064e3b;
+  --card-bg: #ffffff;
+  --card-border: rgba(6, 78, 59, 0.12);
+  --navbar-bg: #d1fae5;
+  --navbar-color: #065f46;
+  --input-bg: #ffffff;
+  --input-color: #064e3b;
+  --input-border: #a7f3d0;
+  --table-bg: transparent;
+  --table-color: #064e3b;
+  --table-border: #a7f3d0;
+  --modal-bg: #ffffff;
+  --modal-color: #064e3b;
+  --primary: #059669;
+  --secondary: #6b7280;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --info: #0ea5e9;
+  --light: #d1fae5;
+  --dark: #064e3b;
+  --blue: #0ea5e9;
+  --red: #ef4444;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --green: #10b981;
+  --cyan: #06b6d4;
+  --link-color: #059669;
+  --hr-border: rgba(6, 78, 59, 0.12);
+  --text-muted: #6b7280;
+  --shadow-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================
+   GLOBAL OVERRIDES
+   ============================================ */
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--body-bg) !important;
+  color: var(--body-color) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--body-color);
+}
+
+p, span, small, label, div {
+  color: inherit;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+a {
+  color: var(--link-color);
+}
+
+a:hover {
+  color: var(--link-color);
+  opacity: 0.85;
+}
+
+hr {
+  border-color: var(--hr-border);
+}
+
+/* Cards */
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--body-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.card-body {
+  color: var(--body-color);
+}
+
+/* Navbar */
+.navbar {
+  background-color: var(--navbar-bg) !important;
+  border-bottom: 1px solid var(--card-border);
+  transition: background-color 0.3s ease;
+}
+
+.navbar-light .navbar-brand,
+.navbar-light .nav-link {
+  color: var(--navbar-color);
+}
+
+/* Buttons - keep Bootstrap classes but ensure text contrast */
+.btn-primary { background-color: var(--primary); border-color: var(--primary); }
+.btn-secondary { background-color: var(--secondary); border-color: var(--secondary); }
+.btn-success { background-color: var(--success); border-color: var(--success); }
+.btn-danger { background-color: var(--danger); border-color: var(--danger); }
+.btn-warning { background-color: var(--warning); border-color: var(--warning); color: #212529; }
+.btn-info { background-color: var(--info); border-color: var(--info); }
+.btn-light { background-color: var(--light); border-color: var(--light); color: var(--body-color); }
+.btn-dark { background-color: var(--dark); border-color: var(--dark); color: var(--body-bg); }
+
+.btn-outline-primary { color: var(--primary); border-color: var(--primary); }
+.btn-outline-secondary { color: var(--secondary); border-color: var(--secondary); }
+.btn-outline-success { color: var(--success); border-color: var(--success); }
+.btn-outline-danger { color: var(--danger); border-color: var(--danger); }
+.btn-outline-warning { color: var(--warning); border-color: var(--warning); }
+.btn-outline-info { color: var(--info); border-color: var(--info); }
+.btn-outline-light { color: var(--light); border-color: var(--light); }
+.btn-outline-dark { color: var(--dark); border-color: var(--dark); }
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Forms */
+.form-control {
+  background-color: var(--input-bg);
+  color: var(--input-color);
+  border-color: var(--input-border);
+}
+
+.form-control:focus {
+  background-color: var(--input-bg);
+  color: var(--input-color);
+}
+
+/* Tables */
+.table {
+  color: var(--table-color);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border-color: var(--table-border);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--light);
+}
+
+/* Modals */
+.modal-content {
+  background-color: var(--modal-bg);
+  color: var(--modal-color);
+  border-color: var(--card-border);
+}
+
+.modal-header {
+  border-bottom-color: var(--card-border);
+}
+
+.modal-footer {
+  border-top-color: var(--card-border);
+}
+
+/* Dropdowns */
+.dropdown-menu {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--body-color);
+}
+
+.dropdown-item {
+  color: var(--body-color);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--light);
+  color: var(--body-color);
+}
+
+.dropdown-item.active {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+/* Badges */
+.badge-primary { background-color: var(--primary); }
+.badge-secondary { background-color: var(--secondary); }
+.badge-success { background-color: var(--success); }
+.badge-danger { background-color: var(--danger); }
+.badge-warning { background-color: var(--warning); color: #212529; }
+.badge-info { background-color: var(--info); }
+.badge-light { background-color: var(--light); color: var(--body-color); }
+.badge-dark { background-color: var(--dark); color: var(--body-bg); }
+
+/* List groups */
+.list-group-item {
+  background-color: var(--card-bg);
+  color: var(--body-color);
+  border-color: var(--card-border);
+}
+
+/* Alerts */
+.alert {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--body-color);
+}
+
+/* Tooltip */
+.tooltip-inner {
+  background-color: var(--dark);
+  color: var(--body-bg);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
 
 .remove-left-border-radius {
   border-bottom-left-radius: 0 !important;

@@ -8,11 +8,13 @@ import FundsIcon from "../img/funds.svg?react";
 import HelpIcon from "../img/help.svg?react";
 import ListIcon from "../img/list.svg?react";
 import SettingsIcon from "../img/settings.svg?react";
+import ThemeToggle from "./ThemeToggle";
 import "./Navigation.scss";
 
 interface INavigationProps {
   inGame: boolean;
   isBanker: boolean;
+  role: "player" | "banker";
 }
 
 interface INavbarLink {
@@ -22,13 +24,13 @@ interface INavbarLink {
   path: string;
 }
 
-const Navigation: React.FC<INavigationProps> = ({ inGame, isBanker }) => {
+const Navigation: React.FC<INavigationProps> = ({ inGame, isBanker, role }) => {
   const currentPath = usePath();
 
   const navbarLinks: INavbarLink[] = [
     {
       path: routePaths.funds,
-      active: inGame,
+      active: inGame && role === "player",
       title: "Funds",
       icon: FundsIcon
     },
@@ -99,6 +101,7 @@ const Navigation: React.FC<INavigationProps> = ({ inGame, isBanker }) => {
               );
             })}
         </Nav>
+        <ThemeToggle />
       </Container>
     </Navbar>
   );

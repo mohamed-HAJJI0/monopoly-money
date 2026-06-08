@@ -1,5 +1,6 @@
 import * as websocket from "ws";
 import gameStore from "../../gameStore";
+import { BANKER_HOST_PLAYER_ID } from "../../gameStore/Game";
 import { IncomingMessage } from "../dto";
 import { IUserData } from "../types";
 
@@ -27,6 +28,13 @@ export const onMessageStreamClosed = (ws: websocket, userData: IUserData) => {
   if (userData.gameId !== null && userData.userToken !== null && isAuthenticated(ws, userData)) {
     const game = gameStore.getGame(userData.gameId);
     const playerId = game.getPlayerId(userData.userToken);
+
+    // Skip cleanup for banker-only hosts
+    if (playerId === BANKER_HOST_PLAYER_ID) {
+      game.removePlayerWebSocket(playerId);
+      return;
+    }
+
     game.removePlayerWebSocket(playerId);
 
     // Tell the game that this player is now disconnected
@@ -88,6 +96,10 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
         ) {
           return; // If a user is not a banker, they cannot send money from anyone but themselves
         }
+        // Banker-only hosts cannot send from themselves since they have no player account
+        if (playerId === BANKER_HOST_PLAYER_ID && event.from === BANKER_HOST_PLAYER_ID) {
+          return;
+        }
         break;
       case "playerNameChange":
         if (!isPlayerBanker && playerId !== event.playerId) {
@@ -98,11 +110,16 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
         if (!isPlayerBanker && playerId !== event.playerId) {
           return; // Only a banker or the player themselves can remove a player from the game
         }
+        // Banker-only hosts cannot delete themselves (they have no player account)
+        if (playerId === BANKER_HOST_PLAYER_ID && event.playerId === BANKER_HOST_PLAYER_ID) {
+          return;
+        }
         break;
       case "playerConnectionChange":
         if (event.playerId !== playerId) {
           return; // Players can only update their own connection status
         }
+        break;
     }
 
     game.addEvent(event, playerId);

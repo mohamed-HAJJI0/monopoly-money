@@ -17,10 +17,13 @@ import {
 } from "../api/dto";
 import { generateRandomId, generateTimeBasedId, getCurrentTime } from "./utils";
 
+export const BANKER_HOST_PLAYER_ID = "banker-host";
+
 export default class Game {
   private events: GameEvent[] = []; // Events in this game
-  private subscribedWebSockets: Record<string, websocket> = {}; // playerId: event websocket
+  private subscribedWebSockets: Record<string, websocket> = {}; // playerId or banker-host: event websocket
   private userTokenToPlayers: Record<string, PlayerId> = {}; // A mapping of ids only known by a user to match to a player
+  private adminTokens: string[] = []; // Tokens for banker-only hosts (no player account)
   private gameState: IGameState = defaultGameState;
 
   private deleteInstance: () => void;
@@ -33,16 +36,28 @@ export default class Game {
   public isGameOpen = () => this.gameState.open;
 
   // Check if a userToken is in a game
-  public isUserInGame = (userToken: string) => this.userTokenToPlayers.hasOwnProperty(userToken);
+  public isUserInGame = (userToken: string) =>
+    this.userTokenToPlayers.hasOwnProperty(userToken) || this.adminTokens.includes(userToken);
 
   // Check if a userToken is allowed to make banker actions in a game
   public isUserABanker = (userToken: string) => {
+    if (this.adminTokens.includes(userToken)) {
+      return true;
+    }
     const playerId = this.userTokenToPlayers[userToken];
     const player = this.gameState.players.find((p) => p.playerId === playerId);
     return player !== undefined && player.banker;
   };
 
-  public getPlayerId = (userToken: string) => this.userTokenToPlayers[userToken];
+  public getPlayerId = (userToken: string) =>
+    this.userTokenToPlayers[userToken] ?? BANKER_HOST_PLAYER_ID;
+
+  // Add a banker-only host (no player account)
+  public addBankerHost = () => {
+    const userToken = generateRandomId();
+    this.adminTokens.push(userToken);
+    return { userToken, playerId: BANKER_HOST_PLAYER_ID };
+  };
 
   // Add a player to a game and get the new userToken
   public addPlayer = (name: string) => {
@@ -84,6 +99,11 @@ export default class Game {
 
   // Record a players websocket connection in-game
   public playerConnectionStatusChange = (playerId: string, connected: boolean) => {
+    // Skip for banker-only hosts
+    if (playerId === BANKER_HOST_PLAYER_ID) {
+      return;
+    }
+
     // Verify the player is still in the game (will not be if they were kicked)
     if (this.gameState.players.find((p) => p.playerId) !== undefined) {
       // If the player is still in the game, update their state
@@ -110,8 +130,10 @@ export default class Game {
     };
     ws.send(JSON.stringify(outgoingMessage));
 
-    // Tell listeners that this player is now connected
-    this.playerConnectionStatusChange(playerId, true);
+    // Tell listeners that this player is now connected (skip for banker-only hosts)
+    if (playerId !== BANKER_HOST_PLAYER_ID) {
+      this.playerConnectionStatusChange(playerId, true);
+    }
   };
 
   // Get the game state
