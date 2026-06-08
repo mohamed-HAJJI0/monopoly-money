@@ -25,6 +25,8 @@ export interface IGameHandlerState extends IGameState {
     proposeGameOpenStateChange: (open: boolean) => void;
     proposeUseFreeParkingChange: (useFreeParking: boolean) => void;
     proposeShowOppositionBalancesChange: (showOppositionBalances: boolean) => void;
+    proposeStartingBalanceChange: (startingBalance: number) => void;
+    proposePassGoAmountChange: (passGoAmount: number) => void;
     proposeGameEnd: () => void;
   };
 }
@@ -116,6 +118,10 @@ const useGameHandler = (): {
                 gameHandler.proposeUseFreeParkingChange.bind(gameHandler),
               proposeShowOppositionBalancesChange:
                 gameHandler.proposeShowOppositionBalancesChange.bind(gameHandler),
+              proposeStartingBalanceChange:
+                gameHandler.proposeStartingBalanceChange.bind(gameHandler),
+              proposePassGoAmountChange:
+                gameHandler.proposePassGoAmountChange.bind(gameHandler),
               proposeGameEnd: gameHandler.proposeGameEnd.bind(gameHandler)
             }
           }

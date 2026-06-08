@@ -115,6 +115,16 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
           return;
         }
         break;
+      case "startingBalanceChange":
+        if (!isPlayerBanker) {
+          return;
+        }
+        break;
+      case "passGoAmountChange":
+        if (!isPlayerBanker) {
+          return;
+        }
+        break;
       case "playerConnectionChange":
         if (event.playerId !== playerId) {
           return; // Players can only update their own connection status

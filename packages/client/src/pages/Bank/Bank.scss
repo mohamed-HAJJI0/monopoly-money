@@ -1,11 +1,60 @@
 .bank {
-  .player-and-submit-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  .player-grid {
+    display: flex;
+    flex-direction: column;
   }
 
-  .settings-and-player-and-submit-group {
-    display: grid;
-    grid-template-columns: auto 1fr 1fr;
+  .player-card {
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid var(--card-border);
+
+    &:hover {
+      border-color: var(--primary);
+    }
+
+    &.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+  }
+
+  .actions-panel {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .fast-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .custom-action {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .log-panel {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.25rem;
+    padding: 1rem;
+    height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+
+    .log-entries {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      background-color: var(--light);
+      border-bottom: 1px solid var(--card-border);
+    }
   }
 }

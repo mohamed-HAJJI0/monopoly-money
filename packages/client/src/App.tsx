@@ -138,9 +138,12 @@ const App: React.FC = () => {
                 players={game.players}
                 useFreeParking={game.useFreeParking}
                 freeParkingBalance={game.freeParkingBalance}
+                startingBalance={game.startingBalance}
+                passGoAmount={game.passGoAmount}
                 hasATransactionBeenMade={
                   game.events.filter((e) => e.type === "transaction").length > 0
                 }
+                events={game.events}
                 proposeTransaction={game.actions.proposeTransaction}
               />
             )
@@ -160,6 +163,11 @@ const App: React.FC = () => {
                 showOppositionBalances={game.showOppositionBalances}
                 players={game.players}
                 gameId={game.gameId}
+                startingBalance={game.startingBalance}
+                passGoAmount={game.passGoAmount}
+                hasATransactionBeenMade={
+                  game.events.filter((e) => e.type === "transaction").length > 0
+                }
                 proposePlayerNameChange={game.actions.proposePlayerNameChange}
                 proposePlayerDelete={game.actions.proposePlayerDelete}
                 proposeGameOpenStateChange={game.actions.proposeGameOpenStateChange}
@@ -167,6 +175,8 @@ const App: React.FC = () => {
                 proposeShowOppositionBalancesChange={
                   game.actions.proposeShowOppositionBalancesChange
                 }
+                proposeStartingBalanceChange={game.actions.proposeStartingBalanceChange}
+                proposePassGoAmountChange={game.actions.proposePassGoAmountChange}
                 proposeGameEnd={game.actions.proposeGameEnd}
               />
             )

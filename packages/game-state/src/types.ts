@@ -16,6 +16,8 @@ export interface IGameState {
   useFreeParking: boolean;
   showOppositionBalances: boolean;
   freeParkingBalance: number;
+  startingBalance: number;
+  passGoAmount: number;
   open: boolean;
 }
 
@@ -30,6 +32,8 @@ export type GameEvent =
   | IGameOpenStateChangeEvent
   | IUseFreeParkingChangeEvent
   | IShowOppositionBalancesChangeEvent
+  | IStartingBalanceChangeEvent
+  | IPassGoAmountChangeEvent
   | IPlayerConnectionChangeEvent;
 
 export interface IGameEvent {
@@ -80,6 +84,16 @@ export interface IUseFreeParkingChangeEvent extends IGameEvent {
 export interface IShowOppositionBalancesChangeEvent extends IGameEvent {
   type: "showOppositionBalancesChange";
   showOppositionBalances: boolean;
+}
+
+export interface IStartingBalanceChangeEvent extends IGameEvent {
+  type: "startingBalanceChange";
+  startingBalance: number;
+}
+
+export interface IPassGoAmountChangeEvent extends IGameEvent {
+  type: "passGoAmountChange";
+  passGoAmount: number;
 }
 
 export interface IPlayerConnectionChangeEvent extends IGameEvent {

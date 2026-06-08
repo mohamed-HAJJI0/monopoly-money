@@ -189,11 +189,35 @@ const getEventDetails = (
       };
     }
 
+    case "startingBalanceChange": {
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
+      return {
+        ...defaults,
+        title: "Starting Balance Changed",
+        actionedBy,
+        detail: `Starting balance set to ${formatCurrency(event.startingBalance)}`,
+        colour: "blue"
+      };
+    }
+
+    case "passGoAmountChange": {
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
+      return {
+        ...defaults,
+        title: "Pass GO Amount Changed",
+        actionedBy,
+        detail: `Pass GO amount set to ${formatCurrency(event.passGoAmount)}`,
+        colour: "blue"
+      };
+    }
+
     case "playerConnectionChange": {
       // Don't show these as they will pollute the history
       return null;
     }
   }
+
+  return null;
 };
 
 export default History;

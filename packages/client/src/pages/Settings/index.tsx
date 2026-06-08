@@ -1,6 +1,6 @@
 import { IGameStatePlayer } from "@monopoly-money/game-state";
 import React, { useState } from "react";
-import { Button, Table } from "react-bootstrap";
+import { Button, Form, Table } from "react-bootstrap";
 import { useModal } from "react-modal-hook";
 import QRCode from "react-qr-code";
 import ConnectedStateDot from "../../components/ConnectedStateDot";
@@ -26,11 +26,16 @@ interface ISettingsProps {
   showOppositionBalances: boolean;
   players: IGameStatePlayer[];
   gameId: string;
+  startingBalance: number;
+  passGoAmount: number;
+  hasATransactionBeenMade: boolean;
   proposePlayerNameChange: (playerId: string, name: string) => void;
   proposePlayerDelete: (playerId: string) => void;
   proposeGameOpenStateChange: (open: boolean) => void;
   proposeUseFreeParkingChange: (useFreeParking: boolean) => void;
   proposeShowOppositionBalancesChange: (showOppositionBalances: boolean) => void;
+  proposeStartingBalanceChange: (startingBalance: number) => void;
+  proposePassGoAmountChange: (passGoAmount: number) => void;
   proposeGameEnd: () => void;
 }
 
@@ -40,11 +45,16 @@ const Settings: React.FC<ISettingsProps> = ({
   showOppositionBalances,
   players,
   gameId,
+  startingBalance,
+  passGoAmount,
+  hasATransactionBeenMade,
   proposePlayerNameChange,
   proposePlayerDelete,
   proposeGameOpenStateChange,
   proposeUseFreeParkingChange,
   proposeShowOppositionBalancesChange,
+  proposeStartingBalanceChange,
+  proposePassGoAmountChange,
   proposeGameEnd
 }) => {
   const [actioningPlayer, setActioningPlayer] = useState<IGameStatePlayer | null>(null);
@@ -129,6 +139,52 @@ const Settings: React.FC<ISettingsProps> = ({
         </div>
       )}
 
+      <h5 className="mb-3">Game Rules</h5>
+      <div className="mb-3 p-3 rounded border">
+        <Form.Group>
+          <Form.Label>Starting Balance for New Players</Form.Label>
+          <div className="d-flex align-items-center gap-2">
+            <Form.Control
+              type="number"
+              value={startingBalance}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val >= 0) {
+                  proposeStartingBalanceChange(val);
+                }
+              }}
+              className="text-center"
+              style={{ maxWidth: 150 }}
+            />
+            <small className="text-muted">
+              {hasATransactionBeenMade
+                ? "Existing players keep their current balance."
+                : "All current players will be auto-initialized to this amount."}
+            </small>
+          </div>
+        </Form.Group>
+
+        <Form.Group className="mt-3">
+          <Form.Label>Pass GO Amount</Form.Label>
+          <div className="d-flex align-items-center gap-2">
+            <Form.Control
+              type="number"
+              value={passGoAmount}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val >= 0) {
+                  proposePassGoAmountChange(val);
+                }
+              }}
+              className="text-center"
+              style={{ maxWidth: 150 }}
+            />
+            <small className="text-muted">Amount given when a player passes GO.</small>
+          </div>
+        </Form.Group>
+      </div>
+
+      <h5 className="mb-3">Players</h5>
       <Table striped bordered hover size="sm">
         <thead>
           <tr>

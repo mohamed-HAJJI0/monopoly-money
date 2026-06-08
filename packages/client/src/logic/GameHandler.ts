@@ -5,9 +5,11 @@ import {
   GameEvent,
   IGameOpenStateChangeEvent,
   IGameState,
+  IPassGoAmountChangeEvent,
   IPlayerDeleteEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
+  IStartingBalanceChangeEvent,
   ITransactionEvent,
   IUseFreeParkingChangeEvent
 } from "@monopoly-money/game-state";
@@ -180,6 +182,28 @@ class GameHandler {
       actionedBy: "", // Will be filled in by the server
       type: "showOppositionBalancesChange",
       showOppositionBalances
+    };
+    this.submitEvent(event);
+  }
+
+  // Change starting balance for new players
+  public proposeStartingBalanceChange(startingBalance: number) {
+    const event: IStartingBalanceChangeEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "startingBalanceChange",
+      startingBalance
+    };
+    this.submitEvent(event);
+  }
+
+  // Change Pass GO amount
+  public proposePassGoAmountChange(passGoAmount: number) {
+    const event: IPassGoAmountChangeEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "passGoAmountChange",
+      passGoAmount
     };
     this.submitEvent(event);
   }

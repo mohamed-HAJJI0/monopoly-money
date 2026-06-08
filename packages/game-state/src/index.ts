@@ -5,12 +5,14 @@ import {
   IGameOpenStateChangeEvent,
   IGameState,
   IGameStatePlayer,
+  IPassGoAmountChangeEvent,
   IPlayerBankerStatusChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerDeleteEvent,
   IPlayerJoinEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
+  IStartingBalanceChangeEvent,
   ITransactionEvent,
   IUseFreeParkingChangeEvent,
   PlayerId
@@ -30,7 +32,9 @@ export {
   IPlayerJoinEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
+  IStartingBalanceChangeEvent,
   ITransactionEvent,
   IUseFreeParkingChangeEvent,
+  IPassGoAmountChangeEvent,
   PlayerId
 };

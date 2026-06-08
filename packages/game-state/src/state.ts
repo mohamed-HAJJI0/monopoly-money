@@ -5,6 +5,8 @@ export const defaultGameState: IGameState = {
   useFreeParking: true,
   showOppositionBalances: true,
   freeParkingBalance: 0,
+  startingBalance: 1500,
+  passGoAmount: 200,
   open: true
 };
 
@@ -20,7 +22,7 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
               playerId: event.playerId,
               name: event.name,
               banker: false,
-              balance: 0,
+              balance: state.startingBalance,
               connected: false
             }
           ]
@@ -134,6 +136,18 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
         return {
           ...state,
           showOppositionBalances: event.showOppositionBalances
+        };
+
+      case "startingBalanceChange":
+        return {
+          ...state,
+          startingBalance: event.startingBalance
+        };
+
+      case "passGoAmountChange":
+        return {
+          ...state,
+          passGoAmount: event.passGoAmount
         };
 
       case "playerConnectionChange":
