@@ -82,7 +82,7 @@ const Funds: React.FC<IFundsProps> = ({
       {isGameOpen && <GameCode gameId={gameId} isBanker={isBanker} />}
 
       {/* Bank & Free Parking */}
-      <div className="mb-2 balance-grid">
+      <div className="mb-3 balance-grid">
         {useFreeParking && (
           <PlayerCard
             name={freeParkingName}
@@ -103,7 +103,7 @@ const Funds: React.FC<IFundsProps> = ({
 
       {/* Current user card */}
       {me !== undefined && (
-        <Card className="mb-2 user-card">
+        <Card className="mb-3 user-card">
           <Card.Body className="p-3 text-center">
             <div
               className="d-flex align-items-center justify-content-center gap-2"
@@ -123,7 +123,7 @@ const Funds: React.FC<IFundsProps> = ({
                 <div className="font-weight-bold" style={{ fontSize: "1.1rem" }}>
                   {me.name}
                 </div>
-                <div style={{ fontSize: "1.4rem", fontWeight: 700 }}>
+                <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
                   {formatCurrency(me.balance)}
                 </div>
               </div>
@@ -131,8 +131,13 @@ const Funds: React.FC<IFundsProps> = ({
 
             {/* Color picker popup */}
             {showColorPicker && (
-              <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--hr-border)" }}>
-                <div className="small text-muted mb-2">Pick Your Color</div>
+              <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--card-border)" }}>
+                <div
+                  className="small mb-2"
+                  style={{ color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}
+                >
+                  Pick Your Color
+                </div>
                 <div className="d-flex justify-content-center flex-wrap gap-2">
                   {PRESET_PLAYER_COLORS.map((c) => {
                     const isTaken = takenColors.includes(c);
@@ -152,10 +157,19 @@ const Funds: React.FC<IFundsProps> = ({
                           height: 36,
                           borderRadius: "50%",
                           backgroundColor: c,
-                          border: isMine ? "3px solid #000" : "2px solid transparent",
+                          border: isMine ? "3px solid var(--body-color)" : "2px solid transparent",
                           cursor: isTaken ? "not-allowed" : "pointer",
                           opacity: isTaken ? 0.3 : 1,
-                          boxShadow: isMine ? "0 0 0 2px #fff, 0 0 0 4px " + c : "none"
+                          boxShadow: isMine
+                            ? "0 0 0 2px var(--body-bg), 0 0 0 4px " + c
+                            : "none",
+                          transition: "transform 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isTaken) (e.target as HTMLElement).style.transform = "scale(1.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.target as HTMLElement).style.transform = "scale(1)";
                         }}
                         aria-label={isTaken ? `Color ${c} taken` : `Select color ${c}`}
                       />
@@ -170,7 +184,12 @@ const Funds: React.FC<IFundsProps> = ({
 
       {/* Other players */}
       <div className="mb-2">
-        <div className="small text-muted mb-1 px-1">Players</div>
+        <div
+          className="small mb-2 px-1"
+          style={{ color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}
+        >
+          Players
+        </div>
         <div className="balance-grid">
           {otherPlayers.map((player) => (
             <PlayerCard
@@ -185,7 +204,7 @@ const Funds: React.FC<IFundsProps> = ({
         </div>
       </div>
 
-      <div className="mt-2">
+      <div className="mt-3">
         <RecentTransactions events={events} players={players} />
       </div>
     </div>

@@ -23,15 +23,11 @@ const GameCode: React.FC<IGameCodeProps> = ({ gameId, isBanker }) => {
   };
 
   return (
-    <div className="text-center mb-2">
-      <Button
-        variant="outline-primary"
-        size="lg"
-        className="game-code-btn"
-        onClick={gameIdClicked}
-      >
+    <div className="text-center mb-3">
+      <button className="game-code-btn" onClick={gameIdClicked}>
+        <span className="game-code-label">Game Code</span>
         <span className="game-code-text">{gameId}</span>
-      </Button>
+      </button>
       <div className="mt-1">
         <small className="text-muted">
           Tap to get a QR code or copy a link to help other players join
@@ -65,9 +61,20 @@ const ShareGameModalContent = ({ gameId }: ShareGameModalContentProps) => {
       <p className="text-center">
         Game Code: <strong className="h4">{gameId}</strong>
       </p>
-      <p className="text-center">Get others to scan the code below to join your game</p>
+      <p className="text-center" style={{ color: "var(--text-muted)" }}>
+        Get others to scan the code below to join your game
+      </p>
       <div className="mt-3 text-center">
-        <QRCode value={shareLink} />
+        <div
+          style={{
+            display: "inline-block",
+            padding: 16,
+            background: "#fff",
+            borderRadius: "var(--radius)"
+          }}
+        >
+          <QRCode value={shareLink} />
+        </div>
       </div>
 
       <div className="mt-4">

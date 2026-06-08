@@ -87,11 +87,11 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   };
 
   return (
-    <div className="text-center">
-      <h1>{title}</h1>
+    <div className="text-center" style={{ maxWidth: 420, margin: "0 auto" }}>
+      <h2 className="mb-4">{title}</h2>
 
       {!newGame && (
-        <Form.Group>
+        <Form.Group className="mb-3">
           <Form.Label>Game Id</Form.Label>
           <NumberFormat
             allowNegative={false}
@@ -108,11 +108,11 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
       )}
 
       {isAStoredGame ? (
-        <p>
-          <em>You're already in this game - name is not required.</em>
+        <p style={{ color: "var(--text-muted)" }}>
+          <em>You're already in this game — name is not required.</em>
         </p>
       ) : (
-        <Form.Group>
+        <Form.Group className="mb-3">
           <Form.Label>Your Name</Form.Label>
           <Form.Control
             placeholder="Name"
@@ -128,10 +128,8 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
         </Form.Group>
       )}
 
-
-
       {newGame && (
-        <Form.Group className="mt-3">
+        <Form.Group className="mt-4 mb-4">
           <Form.Label>Your Role</Form.Label>
           <div>
             <ToggleButtonGroup
@@ -140,15 +138,23 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
               value={role}
               onChange={(val: "player" | "banker") => setRole(val)}
             >
-              <ToggleButton id="role-player" value="player" variant={role === "player" ? "primary" : "outline-primary"}>
+              <ToggleButton
+                id="role-player"
+                value="player"
+                variant={role === "player" ? "primary" : "outline-primary"}
+              >
                 Player
               </ToggleButton>
-              <ToggleButton id="role-banker" value="banker" variant={role === "banker" ? "primary" : "outline-primary"}>
+              <ToggleButton
+                id="role-banker"
+                value="banker"
+                variant={role === "banker" ? "primary" : "outline-primary"}
+              >
                 Banker Only
               </ToggleButton>
             </ToggleButtonGroup>
           </div>
-          <Form.Text className="text-muted">
+          <Form.Text style={{ color: "var(--text-muted)" }}>
             {role === "player"
               ? "You'll play and manage the bank."
               : "You won't be a player — you'll only manage the bank."}
@@ -161,7 +167,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
       </Button>
 
       {hasServerError && (
-        <p style={{ color: "var(--danger)" }} className="mt-2">
+        <p style={{ color: "var(--danger)" }} className="mt-3">
           {Config.api.unreachableErrorMessage.split("\n").map((line, i, arr) => (
             <React.Fragment key={line}>
               {line}

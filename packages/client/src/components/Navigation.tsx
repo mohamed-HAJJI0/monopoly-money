@@ -1,6 +1,6 @@
 import { navigate, usePath } from "hookrouter";
 import React from "react";
-import { Button, Container, Nav, Navbar } from "react-bootstrap";
+import { Container, Nav, Navbar } from "react-bootstrap";
 import { routePaths } from "../constants";
 import BankIcon from "../img/bank.svg?react";
 import BannerImage from "../img/banner.png";
@@ -8,7 +8,6 @@ import FundsIcon from "../img/funds.svg?react";
 import HelpIcon from "../img/help.svg?react";
 import ListIcon from "../img/list.svg?react";
 import SettingsIcon from "../img/settings.svg?react";
-import ThemeToggle from "./ThemeToggle";
 import "./Navigation.scss";
 
 interface INavigationProps {
@@ -79,29 +78,32 @@ const Navigation: React.FC<INavigationProps> = ({ inGame, isBanker, role }) => {
             .filter((link) => link.active)
             .map((link) => {
               const Icon = link.icon;
+              const isActive = currentPath === link.path;
               return (
                 <Nav.Link
                   key={link.path}
                   href="#"
                   onClick={goTo(link.path)}
-                  active={currentPath === link.path}
+                  active={isActive}
                   className="p-0"
                 >
-                  <Button variant="light" title={link.title} className="d-flex ml-1 icon-button">
+                  <button
+                    className={`nav-icon-button ${isActive ? "active" : ""}`}
+                    title={link.title}
+                  >
                     <Icon
                       style={{
-                        height: 25,
-                        width: 25,
-                        fill: currentPath === link.path ? "black" : "rgba(0,0,0,.65)"
+                        height: 22,
+                        width: 22,
+                        fill: isActive ? "var(--primary)" : "var(--text-muted)"
                       }}
                     />
-                    <span className="ml-1 d-none d-sm-inline">{link.title}</span>
-                  </Button>
+                    <span className="nav-label">{link.title}</span>
+                  </button>
                 </Nav.Link>
               );
             })}
         </Nav>
-        <ThemeToggle />
       </Container>
     </Navbar>
   );

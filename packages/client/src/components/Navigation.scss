@@ -1,10 +1,53 @@
 @import "~bootstrap/scss/bootstrap.scss";
 
 .navigation {
-  .icon-button {
-    @media (max-width: map-get($grid-breakpoints, sm)) {
-      padding-left: ($spacer * 0.5) !important;
-      padding-right: ($spacer * 0.5) !important;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+
+  .navbar-brand {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .nav-icon-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.4rem 0.75rem;
+    margin-left: 0.25rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: calc(var(--radius) * 0.6);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--body-color);
+    }
+
+    &.active {
+      background: rgba(193, 0, 7, 0.12);
+      border-color: rgba(193, 0, 7, 0.25);
+      color: var(--primary-foreground);
+    }
+  }
+
+  .nav-label {
+    display: none;
+
+    @media (min-width: map-get($grid-breakpoints, sm)) {
+      display: inline;
+    }
+  }
+
+  @media (max-width: map-get($grid-breakpoints, sm)) {
+    .nav-icon-button {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
   }
 }

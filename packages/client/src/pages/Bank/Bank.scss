@@ -65,11 +65,12 @@
     background-color: var(--card-bg);
     color: var(--body-color);
     border-color: var(--card-border);
+    border-radius: var(--radius);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px var(--shadow-color);
+      box-shadow: 0 4px 16px var(--shadow-color);
     }
 
     .color-dot {
@@ -77,33 +78,36 @@
       height: 14px;
       border-radius: 50%;
       display: inline-block;
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
     }
 
     .color-picker {
       display: flex;
       flex-wrap: wrap;
-      gap: 2px;
+      gap: 3px;
     }
 
     .action-buttons {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 6px;
     }
 
     .custom-action {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
     }
   }
 
   .free-parking-card {
-    background-color: var(--warning);
-    color: #212529;
-    border: none;
+    background-color: var(--card-bg);
+    color: var(--warning);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
     margin-top: 0.5rem;
+    font-weight: 600;
   }
 
   .log-area {
@@ -112,33 +116,33 @@
     flex-direction: column;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 0.25rem;
+    border-radius: var(--radius);
     overflow: hidden;
 
     .log-header {
-      padding: 0.5rem 0.75rem;
+      padding: 0.6rem 0.9rem;
       border-bottom: 1px solid var(--card-border);
-      background-color: var(--light);
+      background-color: rgba(255, 255, 255, 0.02);
       flex-shrink: 0;
     }
 
     .log-messages {
       flex: 1;
       overflow: hidden;
-      padding: 0.5rem;
+      padding: 0.6rem;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
     }
 
     .log-message {
-      padding: 2px 0;
+      padding: 3px 0;
       border-bottom: 1px solid var(--hr-border);
       word-break: break-word;
 
       &.undone {
-        opacity: 0.5;
-        background-color: var(--light);
+        opacity: 0.4;
+        background-color: rgba(255, 255, 255, 0.02);
       }
     }
   }

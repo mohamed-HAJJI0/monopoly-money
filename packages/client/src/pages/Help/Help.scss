@@ -1,10 +1,22 @@
 .help {
-  h4:before {
-    // Fix header hiding under navigation when jumping to in page links
-    display: block;
-    content: " ";
-    margin-top: -60px;
-    height: 60px;
-    visibility: hidden;
+  h3, h4, h5 {
+    color: var(--body-color);
+  }
+
+  p, li {
+    color: var(--text-muted);
+  }
+
+  a {
+    color: var(--link-color);
+  }
+
+  img {
+    border-radius: calc(var(--radius) * 0.6);
+    border: 1px solid var(--card-border);
+  }
+
+  ul {
+    padding-left: 1.5rem;
   }
 }
