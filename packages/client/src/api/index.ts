@@ -6,13 +6,13 @@ import {
 } from "@monopoly-money/server/build/api/dto";
 import config from "../config";
 
-export const createGame = (name: string, role: "player" | "banker" = "player"): Promise<IJoinGameResponse> => {
+export const createGame = (name: string, role: "player" | "banker" = "player", color?: string): Promise<IJoinGameResponse> => {
   return fetch(`${config.api.root}/api/game`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ name, role } as ICreateGameRequest)
+    body: JSON.stringify({ name, role, color } as ICreateGameRequest)
   }).then((r) => {
     if (r.status === 200) {
       return r.json() as Promise<IJoinGameResponse>;
@@ -24,14 +24,15 @@ export const createGame = (name: string, role: "player" | "banker" = "player"): 
 
 export const joinGame = async (
   gameId: string,
-  name: string
+  name: string,
+  color?: string
 ): Promise<IJoinGameResponse | "DoesNotExist" | "NotOpen"> => {
   const response = await fetch(`${config.api.root}/api/game/${gameId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ name } as IJoinGameRequest)
+    body: JSON.stringify({ name, color } as IJoinGameRequest)
   });
 
   if (response.status === 200) {

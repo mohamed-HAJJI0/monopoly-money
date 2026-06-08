@@ -6,6 +6,7 @@ import {
   IGameOpenStateChangeEvent,
   IGameState,
   IPassGoAmountChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerDeleteEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
@@ -138,6 +139,18 @@ class GameHandler {
       type: "playerNameChange",
       playerId,
       name
+    };
+    this.submitEvent(event);
+  }
+
+  // Change a player's color
+  public proposePlayerColorChange(playerId: string, color: string) {
+    const event: IPlayerColorChangeEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "playerColorChange",
+      playerId,
+      color
     };
     this.submitEvent(event);
   }

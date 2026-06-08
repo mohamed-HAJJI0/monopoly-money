@@ -7,6 +7,7 @@ import {
   IGameStatePlayer,
   IPassGoAmountChangeEvent,
   IPlayerBankerStatusChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerDeleteEvent,
   IPlayerJoinEvent,
@@ -27,6 +28,7 @@ export {
   IGameState,
   IGameStatePlayer,
   IPlayerBankerStatusChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerDeleteEvent,
   IPlayerJoinEvent,
@@ -38,3 +40,5 @@ export {
   IPassGoAmountChangeEvent,
   PlayerId
 };
+
+export { PRESET_PLAYER_COLORS } from "./state";

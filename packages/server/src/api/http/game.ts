@@ -8,9 +8,9 @@ const router = express.Router();
 
 // Create a new game
 router.post("/", (req, res) => {
-  const { name, role } = req.body as ICreateGameRequest;
+  const { name, role, color } = req.body as ICreateGameRequest;
 
-  const { gameId, userToken, playerId } = gameStore.createGame(name, role);
+  const { gameId, userToken, playerId } = gameStore.createGame(name, role, color);
 
   const response: IJoinGameResponse = { gameId, userToken, playerId };
   res.json(response);
@@ -20,7 +20,7 @@ router.post("/", (req, res) => {
 // Join a game
 router.post("/:gameId", (req, res) => {
   const { gameId } = req.params;
-  const { name } = req.body as IJoinGameRequest;
+  const { name, color } = req.body as IJoinGameRequest;
 
   if (!gameStore.doesGameExist(gameId)) {
     res.status(404).send("Game does not exist");
@@ -28,7 +28,7 @@ router.post("/:gameId", (req, res) => {
     res.status(403).send("Game is not open");
   } else {
     const game = gameStore.getGame(gameId);
-    const { userToken, playerId } = game.addPlayer(name);
+    const { userToken, playerId } = game.addPlayer(name, color);
 
     const response: IJoinGameResponse = { gameId, userToken, playerId };
     res.json(response);

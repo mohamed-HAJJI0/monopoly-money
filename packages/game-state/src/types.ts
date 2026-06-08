@@ -6,6 +6,7 @@ export type GameEntity = "bank" | "freeParking" | PlayerId;
 export interface IGameStatePlayer {
   playerId: PlayerId;
   name: string;
+  color: string;
   banker: boolean;
   balance: number;
   connected: boolean;
@@ -27,6 +28,7 @@ export type GameEvent =
   | IPlayerJoinEvent
   | IPlayerDeleteEvent
   | IPlayerNameChangeEvent
+  | IPlayerColorChangeEvent
   | IPlayerBankerStatusChangeEvent
   | ITransactionEvent
   | IGameOpenStateChangeEvent
@@ -45,6 +47,7 @@ export interface IPlayerJoinEvent extends IGameEvent {
   type: "playerJoin";
   playerId: PlayerId;
   name: string;
+  color: string;
 }
 
 export interface IPlayerDeleteEvent extends IGameEvent {
@@ -56,6 +59,12 @@ export interface IPlayerNameChangeEvent extends IGameEvent {
   type: "playerNameChange";
   playerId: PlayerId;
   name: string;
+}
+
+export interface IPlayerColorChangeEvent extends IGameEvent {
+  type: "playerColorChange";
+  playerId: PlayerId;
+  color: string;
 }
 
 export interface IPlayerBankerStatusChangeEvent extends IGameEvent {

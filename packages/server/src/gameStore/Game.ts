@@ -4,6 +4,7 @@ import {
   GameEvent,
   IGameState,
   IPlayerBankerStatusChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerJoinEvent,
   PlayerId
@@ -60,7 +61,7 @@ export default class Game {
   };
 
   // Add a player to a game and get the new userToken
-  public addPlayer = (name: string) => {
+  public addPlayer = (name: string, color?: string) => {
     // Identify id
     const playerId = generateTimeBasedId();
     const userToken = generateRandomId();
@@ -71,7 +72,8 @@ export default class Game {
       time: getCurrentTime(),
       actionedBy: playerId,
       playerId,
-      name
+      name,
+      color: color || ""
     };
     this.pushEvent(event);
 
@@ -79,6 +81,18 @@ export default class Game {
     this.userTokenToPlayers[userToken] = playerId;
 
     return { userToken, playerId };
+  };
+
+  // Change a player's color
+  public setPlayerColor = (playerId: string, color: string, actionedByPlayerId: string) => {
+    const event: IPlayerColorChangeEvent = {
+      type: "playerColorChange",
+      time: getCurrentTime(),
+      actionedBy: actionedByPlayerId,
+      playerId,
+      color
+    };
+    this.pushEvent(event);
   };
 
   // Set a player as a banker

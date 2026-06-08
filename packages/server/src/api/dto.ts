@@ -5,10 +5,12 @@ import { GameEvent } from "@monopoly-money/game-state";
 export interface ICreateGameRequest {
   name: string;
   role?: "player" | "banker";
+  color?: string;
 }
 
 export interface IJoinGameRequest {
   name: string;
+  color?: string;
 }
 
 export interface IJoinGameResponse {

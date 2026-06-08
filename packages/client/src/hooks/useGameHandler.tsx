@@ -21,6 +21,7 @@ export interface IGameHandlerState extends IGameState {
   actions: {
     proposeTransaction: (from: GameEntity, to: GameEntity, amount: number) => void;
     proposePlayerNameChange: (playerId: string, name: string) => void;
+    proposePlayerColorChange: (playerId: string, color: string) => void;
     proposePlayerDelete: (playerId: string) => void;
     proposeGameOpenStateChange: (open: boolean) => void;
     proposeUseFreeParkingChange: (useFreeParking: boolean) => void;
@@ -112,6 +113,7 @@ const useGameHandler = (): {
             actions: {
               proposeTransaction: gameHandler.proposeTransaction.bind(gameHandler),
               proposePlayerNameChange: gameHandler.proposePlayerNameChange.bind(gameHandler),
+              proposePlayerColorChange: gameHandler.proposePlayerColorChange.bind(gameHandler),
               proposePlayerDelete: gameHandler.proposePlayerDelete.bind(gameHandler),
               proposeGameOpenStateChange: gameHandler.proposeGameOpenStateChange.bind(gameHandler),
               proposeUseFreeParkingChange:

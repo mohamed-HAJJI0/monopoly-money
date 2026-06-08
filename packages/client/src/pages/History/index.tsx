@@ -211,6 +211,18 @@ const getEventDetails = (
       };
     }
 
+    case "playerColorChange": {
+      const player = nextState.players.find((p) => p.playerId === event.playerId)!;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
+      return {
+        ...defaults,
+        title: "Player Color Changed",
+        actionedBy,
+        detail: `${player.name} changed to ${event.color}`,
+        colour: "cyan"
+      };
+    }
+
     case "playerConnectionChange": {
       // Don't show these as they will pollute the history
       return null;

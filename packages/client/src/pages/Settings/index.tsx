@@ -1,4 +1,4 @@
-import { IGameStatePlayer } from "@monopoly-money/game-state";
+import { IGameStatePlayer, PRESET_PLAYER_COLORS } from "@monopoly-money/game-state";
 import React, { useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { useModal } from "react-modal-hook";
@@ -30,6 +30,7 @@ interface ISettingsProps {
   passGoAmount: number;
   hasATransactionBeenMade: boolean;
   proposePlayerNameChange: (playerId: string, name: string) => void;
+  proposePlayerColorChange: (playerId: string, color: string) => void;
   proposePlayerDelete: (playerId: string) => void;
   proposeGameOpenStateChange: (open: boolean) => void;
   proposeUseFreeParkingChange: (useFreeParking: boolean) => void;
@@ -49,6 +50,7 @@ const Settings: React.FC<ISettingsProps> = ({
   passGoAmount,
   hasATransactionBeenMade,
   proposePlayerNameChange,
+  proposePlayerColorChange,
   proposePlayerDelete,
   proposeGameOpenStateChange,
   proposeUseFreeParkingChange,
@@ -189,6 +191,7 @@ const Settings: React.FC<ISettingsProps> = ({
         <thead>
           <tr>
             <th></th>
+            <th>Color</th>
             <th>Name</th>
             <th>Balance</th>
             <th></th>
@@ -199,6 +202,26 @@ const Settings: React.FC<ISettingsProps> = ({
             <tr key={player.playerId} className="player-row">
               <td>
                 <ConnectedStateDot connected={player.connected} />
+              </td>
+              <td>
+                <div className="d-flex flex-wrap" style={{ maxWidth: 120 }}>
+                  {PRESET_PLAYER_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => proposePlayerColorChange(player.playerId, c)}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        backgroundColor: c,
+                        border: player.color === c ? "2px solid #000" : "1px solid transparent",
+                        cursor: "pointer",
+                        margin: 1
+                      }}
+                      aria-label={`Change color to ${c}`}
+                    />
+                  ))}
+                </div>
               </td>
               <td>{player.name}</td>
               <td>{formatCurrency(player.balance)}</td>

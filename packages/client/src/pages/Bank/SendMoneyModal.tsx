@@ -5,14 +5,15 @@ import { formatCurrency } from "../../utils";
 
 interface ISendMoneyModalProps {
   show: boolean;
+  sender: IGameStatePlayer | null;
   players: IGameStatePlayer[];
   onClose: () => void;
-  onSend: (playerId: string, amount: number) => void;
+  onSend: (recipientId: string, amount: number) => void;
 }
 
 const presetAmounts = [50, 100, 200, 500];
 
-const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, players, onClose, onSend }) => {
+const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, sender, players, onClose, onSend }) => {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("");
 
@@ -30,16 +31,20 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, players, onClose
     setAmount(val.toString());
   };
 
+  const availablePlayers = sender ? players.filter((p) => p.playerId !== sender.playerId) : players;
+
   return (
     <Modal show={show} onHide={onClose} centered>
       <Modal.Header closeButton placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-        <Modal.Title>Send Money to Player</Modal.Title>
+        <Modal.Title>
+          {sender ? `Send from ${sender.name}` : "Send Money"}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Group>
-          <Form.Label>Select Player</Form.Label>
+          <Form.Label>Select Recipient</Form.Label>
           <div className="d-flex flex-wrap gap-2 mb-3">
-            {players.map((player) => (
+            {availablePlayers.map((player) => (
               <Button
                 key={player.playerId}
                 variant={selectedPlayerId === player.playerId ? "primary" : "outline-primary"}

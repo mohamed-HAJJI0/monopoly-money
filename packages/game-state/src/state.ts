@@ -1,5 +1,23 @@
 import { GameEvent, IGameState } from "./types";
 
+export const PRESET_PLAYER_COLORS = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#d946ef",
+  "#f43f5e",
+  "#14b8a6",
+  "#84cc16",
+  "#f59e0b"
+];
+
+const getDefaultColor = (playerCount: number): string =>
+  PRESET_PLAYER_COLORS[playerCount % PRESET_PLAYER_COLORS.length];
+
 export const defaultGameState: IGameState = {
   players: [],
   useFreeParking: true,
@@ -21,6 +39,7 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
             {
               playerId: event.playerId,
               name: event.name,
+              color: event.color || getDefaultColor(state.players.length),
               banker: false,
               balance: state.startingBalance,
               connected: false
@@ -42,6 +61,19 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
               ? {
                   ...p,
                   name: event.name
+                }
+              : p
+          )
+        };
+
+      case "playerColorChange":
+        return {
+          ...state,
+          players: state.players.map((p) =>
+            p.playerId === event.playerId
+              ? {
+                  ...p,
+                  color: event.color
                 }
               : p
           )

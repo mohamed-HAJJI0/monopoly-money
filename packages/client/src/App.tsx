@@ -145,6 +145,7 @@ const App: React.FC = () => {
                 }
                 events={game.events}
                 proposeTransaction={game.actions.proposeTransaction}
+                proposePlayerColorChange={game.actions.proposePlayerColorChange}
               />
             )
         : () => <NotFound />,
@@ -169,6 +170,7 @@ const App: React.FC = () => {
                   game.events.filter((e) => e.type === "transaction").length > 0
                 }
                 proposePlayerNameChange={game.actions.proposePlayerNameChange}
+                proposePlayerColorChange={game.actions.proposePlayerColorChange}
                 proposePlayerDelete={game.actions.proposePlayerDelete}
                 proposeGameOpenStateChange={game.actions.proposeGameOpenStateChange}
                 proposeUseFreeParkingChange={game.actions.proposeUseFreeParkingChange}
