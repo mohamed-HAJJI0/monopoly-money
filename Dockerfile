@@ -14,6 +14,8 @@ RUN npm install
 # Copy source code
 COPY . .
 
+ENV VITE_API_ROOT=""
+
 # Build the app
 RUN npm run build
 
