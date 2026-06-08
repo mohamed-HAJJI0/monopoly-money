@@ -145,14 +145,25 @@ const App: React.FC = () => {
                   game.events.filter((e) => e.type === "transaction").length > 0
                 }
                 events={game.events}
+                undoneTransactions={game.undoneTransactions}
                 proposeTransaction={game.actions.proposeTransaction}
+                proposeTransactionUndo={game.actions.proposeTransactionUndo}
                 proposePlayerColorChange={game.actions.proposePlayerColorChange}
               />
             )
         : () => <NotFound />,
     [routePaths.history]:
       game !== null
-        ? () => wrapRoute(routePaths.history, <History events={game.events} role={game.role} />)
+        ? () =>
+            wrapRoute(
+              routePaths.history,
+              <History
+                events={game.events}
+                role={game.role}
+                isBanker={game.isBanker}
+                proposeTransactionUndo={game.actions.proposeTransactionUndo}
+              />
+            )
         : () => <NotFound />,
     [routePaths.settings]:
       game !== null && game.isBanker

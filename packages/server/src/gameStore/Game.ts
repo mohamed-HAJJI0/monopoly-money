@@ -20,6 +20,13 @@ import { generateRandomId, generateTimeBasedId, getCurrentTime } from "./utils";
 
 export const BANKER_HOST_PLAYER_ID = "banker-host";
 
+// === FAKE DATA FOR TESTING ===
+const FAKE_DATA_ENABLED = true;
+const FAKE_PLAYER_COUNT = 6;
+const FAKE_PLAYER_NAMES = ["Alice", "Bob", "Charlie", "Diana", "Evan", "Fiona", "George", "Hannah", "Ian", "Julia", "Kevin", "Luna"];
+const FAKE_COLORS = ["#e6194b", "#3cb44b", "#ffe119", "#0082c8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#d2f53c", "#fabebe"];
+// =============================
+
 export default class Game {
   private events: GameEvent[] = []; // Events in this game
   private subscribedWebSockets: Record<string, websocket> = {}; // playerId or banker-host: event websocket
@@ -32,6 +39,69 @@ export default class Game {
   constructor(deleteInstance: () => void) {
     this.deleteInstance = deleteInstance;
   }
+
+  public injectFakeData = () => {
+    if (!FAKE_DATA_ENABLED) return;
+    const count = Math.min(FAKE_PLAYER_COUNT, FAKE_PLAYER_NAMES.length);
+    const createdPlayerIds: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const playerId = generateTimeBasedId();
+      createdPlayerIds.push(playerId);
+      const joinEvent: IPlayerJoinEvent = {
+        type: "playerJoin",
+        time: getCurrentTime(),
+        actionedBy: playerId,
+        playerId,
+        name: FAKE_PLAYER_NAMES[i],
+        color: FAKE_COLORS[i % FAKE_COLORS.length]
+      };
+      this.events.push(joinEvent);
+      this.gameState = calculateGameState([joinEvent], this.gameState);
+      const connEvent: IPlayerConnectionChangeEvent = {
+        type: "playerConnectionChange",
+        time: getCurrentTime(),
+        actionedBy: playerId,
+        playerId,
+        connected: true
+      };
+      this.events.push(connEvent);
+      this.gameState = calculateGameState([connEvent], this.gameState);
+    }
+    const transactions = [
+      { from: "bank" as const, to: createdPlayerIds[0], amount: 200 },
+      { from: "bank" as const, to: createdPlayerIds[1], amount: 200 },
+      { from: createdPlayerIds[0], to: "bank" as const, amount: 150 },
+      { from: createdPlayerIds[1], to: createdPlayerIds[2], amount: 50 },
+      { from: "bank" as const, to: createdPlayerIds[2], amount: 200 },
+      { from: createdPlayerIds[2], to: "bank" as const, amount: 100 },
+      { from: createdPlayerIds[0], to: createdPlayerIds[3], amount: 75 },
+      { from: "bank" as const, to: createdPlayerIds[3], amount: 200 },
+      { from: createdPlayerIds[3], to: "freeParking" as const, amount: 100 },
+      { from: createdPlayerIds[1], to: "bank" as const, amount: 200 },
+      { from: "bank" as const, to: createdPlayerIds[4], amount: 200 },
+      { from: createdPlayerIds[4], to: createdPlayerIds[0], amount: 25 },
+      { from: createdPlayerIds[0], to: "bank" as const, amount: 50 },
+      { from: "bank" as const, to: createdPlayerIds[5], amount: 200 },
+      { from: createdPlayerIds[5], to: createdPlayerIds[2], amount: 120 },
+      { from: createdPlayerIds[2], to: "bank" as const, amount: 60 },
+      { from: createdPlayerIds[3], to: createdPlayerIds[4], amount: 40 },
+      { from: createdPlayerIds[4], to: "bank" as const, amount: 150 },
+      { from: "bank" as const, to: createdPlayerIds[0], amount: 100 },
+      { from: createdPlayerIds[1], to: "freeParking" as const, amount: 75 },
+    ];
+    for (const tx of transactions) {
+      const txEvent = {
+        type: "transaction" as const,
+        time: getCurrentTime(),
+        actionedBy: tx.from === "bank" || tx.from === "freeParking" ? (createdPlayerIds[0] ?? "bank") : tx.from,
+        from: tx.from,
+        to: tx.to,
+        amount: tx.amount
+      };
+      this.events.push(txEvent);
+      this.gameState = calculateGameState([txEvent], this.gameState);
+    }
+  };
 
   // Check if a game is open
   public isGameOpen = () => this.gameState.open;

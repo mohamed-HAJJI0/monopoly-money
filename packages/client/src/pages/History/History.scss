@@ -3,6 +3,10 @@
     display: grid;
     grid-template-columns: 8px 1fr;
 
+    &.undone {
+      opacity: 0.5;
+    }
+
     .event-details {
       padding-left: 8px;
 

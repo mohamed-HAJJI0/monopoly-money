@@ -20,6 +20,7 @@ export interface IGameHandlerState extends IGameState {
   events: GameEvent[];
   actions: {
     proposeTransaction: (from: GameEntity, to: GameEntity, amount: number) => void;
+    proposeTransactionUndo: (originalTime: string, from: GameEntity, to: GameEntity, amount: number) => void;
     proposePlayerNameChange: (playerId: string, name: string) => void;
     proposePlayerColorChange: (playerId: string, color: string) => void;
     proposePlayerDelete: (playerId: string) => void;
@@ -112,6 +113,7 @@ const useGameHandler = (): {
             events: gameHandler.getEvents(),
             actions: {
               proposeTransaction: gameHandler.proposeTransaction.bind(gameHandler),
+              proposeTransactionUndo: gameHandler.proposeTransactionUndo.bind(gameHandler),
               proposePlayerNameChange: gameHandler.proposePlayerNameChange.bind(gameHandler),
               proposePlayerColorChange: gameHandler.proposePlayerColorChange.bind(gameHandler),
               proposePlayerDelete: gameHandler.proposePlayerDelete.bind(gameHandler),

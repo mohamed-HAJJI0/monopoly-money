@@ -25,7 +25,8 @@ export const defaultGameState: IGameState = {
   freeParkingBalance: 0,
   startingBalance: 1500,
   passGoAmount: 200,
-  open: true
+  open: true,
+  undoneTransactions: []
 };
 
 export const calculateGameState = (events: GameEvent[], currentState: IGameState): IGameState => {
@@ -152,6 +153,75 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
             ]
           };
         }
+      case "transactionUndo": {
+        // Mark the original transaction as undone
+        const undoneTransactions = [...state.undoneTransactions, event.originalTime];
+        // Apply the reverse transaction (swap from/to)
+        const reverseFrom = event.to;
+        const reverseTo = event.from;
+        if (reverseFrom === "bank" || reverseFrom === "freeParking") {
+          const destinationPlayer = state.players.find((p) => p.playerId === reverseTo);
+          if (destinationPlayer === undefined) {
+            throw new Error("Unable to find destination player for undo");
+          }
+          return {
+            ...state,
+            undoneTransactions,
+            players: [
+              ...state.players.filter((p) => p.playerId !== reverseFrom && p.playerId !== reverseTo),
+              {
+                ...destinationPlayer,
+                balance: destinationPlayer.balance + event.amount
+              }
+            ],
+            freeParkingBalance:
+              reverseFrom === "freeParking"
+                ? state.freeParkingBalance - event.amount
+                : state.freeParkingBalance
+          };
+        } else if (reverseTo === "bank" || reverseTo === "freeParking") {
+          const sourcePlayer = state.players.find((p) => p.playerId === reverseFrom);
+          if (sourcePlayer === undefined) {
+            throw new Error("Unable to find source player for undo");
+          }
+          return {
+            ...state,
+            undoneTransactions,
+            players: [
+              ...state.players.filter((p) => p.playerId !== reverseFrom && p.playerId !== reverseTo),
+              {
+                ...sourcePlayer,
+                balance: sourcePlayer.balance - event.amount
+              }
+            ],
+            freeParkingBalance:
+              reverseTo === "freeParking"
+                ? state.freeParkingBalance + event.amount
+                : state.freeParkingBalance
+          };
+        } else {
+          const sourcePlayer = state.players.find((p) => p.playerId === reverseFrom);
+          const destinationPlayer = state.players.find((p) => p.playerId === reverseTo);
+          if (sourcePlayer === undefined || destinationPlayer === undefined) {
+            throw new Error("Unable to find source or destination player for undo");
+          }
+          return {
+            ...state,
+            undoneTransactions,
+            players: [
+              ...state.players.filter((p) => p.playerId !== reverseFrom && p.playerId !== reverseTo),
+              {
+                ...sourcePlayer,
+                balance: sourcePlayer.balance - event.amount
+              },
+              {
+                ...destinationPlayer,
+                balance: destinationPlayer.balance + event.amount
+              }
+            ]
+          };
+        }
+      }
       case "gameOpenStateChange":
         return {
           ...state,

@@ -14,7 +14,9 @@ interface IBankProps {
   passGoAmount: number;
   hasATransactionBeenMade: boolean;
   events: GameEvent[];
+  undoneTransactions: string[];
   proposeTransaction: (from: GameEntity, to: GameEntity, amount: number) => void;
+  proposeTransactionUndo: (originalTime: string, from: GameEntity, to: GameEntity, amount: number) => void;
   proposePlayerColorChange: (playerId: string, color: string) => void;
 }
 
@@ -31,7 +33,9 @@ const Bank: React.FC<IBankProps> = ({
   passGoAmount,
   hasATransactionBeenMade,
   events,
+  undoneTransactions,
   proposeTransaction,
+  proposeTransactionUndo,
   proposePlayerColorChange
 }) => {
   const [layout, setLayout] = useState<LayoutMode>("column");
@@ -89,7 +93,7 @@ const Bank: React.FC<IBankProps> = ({
     }
   };
 
-  const getLogEntry = (event: GameEvent): { text: string; color?: string } | null => {
+  const getLogEntry = (event: GameEvent): { text: string; color?: string; isTransaction: boolean; originalTime?: string; from?: GameEntity; to?: GameEntity; amount?: number; isUndone: boolean } | null => {
     const time = DateTime.fromISO(event.time).toFormat("h:mm a");
     switch (event.type) {
       case "transaction": {
@@ -98,29 +102,48 @@ const Bank: React.FC<IBankProps> = ({
         const toName =
           event.to === "bank" ? "Bank" : event.to === "freeParking" ? "Free Parking" : players.find((p) => p.playerId === event.to)?.name ?? "?";
         const fromPlayer = players.find((p) => p.playerId === event.from);
+        const isUndone = undoneTransactions.includes(event.time);
         return {
           text: `[${time}] ${fromName} → ${toName}: ${formatCurrency(event.amount)}`,
-          color: fromPlayer?.color
+          color: fromPlayer?.color,
+          isTransaction: true,
+          originalTime: event.time,
+          from: event.from,
+          to: event.to,
+          amount: event.amount,
+          isUndone
+        };
+      }
+      case "transactionUndo": {
+        const fromName =
+          event.from === "bank" ? "Bank" : event.from === "freeParking" ? "Free Parking" : players.find((p) => p.playerId === event.from)?.name ?? "?";
+        const toName =
+          event.to === "bank" ? "Bank" : event.to === "freeParking" ? "Free Parking" : players.find((p) => p.playerId === event.to)?.name ?? "?";
+        return {
+          text: `[${time}] ↩ UNDO: ${fromName} → ${toName}: ${formatCurrency(event.amount)}`,
+          color: "#9e9e9e",
+          isTransaction: false,
+          isUndone: false
         };
       }
       case "playerJoin":
-        return { text: `[${time}] ${event.name} joined` };
+        return { text: `[${time}] ${event.name} joined`, isTransaction: false, isUndone: false };
       case "playerDelete": {
         const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
-        return { text: `[${time}] ${name} removed` };
+        return { text: `[${time}] ${name} removed`, isTransaction: false, isUndone: false };
       }
       case "playerNameChange": {
         const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
-        return { text: `[${time}] ${name} renamed` };
+        return { text: `[${time}] ${name} renamed`, isTransaction: false, isUndone: false };
       }
       case "playerColorChange": {
         const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
-        return { text: `[${time}] ${name} changed color` };
+        return { text: `[${time}] ${name} changed color`, isTransaction: false, isUndone: false };
       }
       case "startingBalanceChange":
-        return { text: `[${time}] Starting balance set to ${formatCurrency(event.startingBalance)}` };
+        return { text: `[${time}] Starting balance set to ${formatCurrency(event.startingBalance)}`, isTransaction: false, isUndone: false };
       case "passGoAmountChange":
-        return { text: `[${time}] Pass GO set to ${formatCurrency(event.passGoAmount)}` };
+        return { text: `[${time}] Pass GO set to ${formatCurrency(event.passGoAmount)}`, isTransaction: false, isUndone: false };
       default:
         return null;
     }
@@ -128,7 +151,7 @@ const Bank: React.FC<IBankProps> = ({
 
   const logEntries = events
     .map((e) => getLogEntry(e))
-    .filter((e): e is { text: string; color?: string } => e !== null);
+    .filter((e): e is NonNullable<ReturnType<typeof getLogEntry>> => e !== null);
 
   const renderPlayerCard = (player: IGameStatePlayer) => {
     const inputVal = customInputs[player.playerId] || "";
@@ -314,10 +337,25 @@ const Bank: React.FC<IBankProps> = ({
               logEntries.map((entry, idx) => (
                 <div
                   key={idx}
-                  className="log-message"
+                  className={`log-message ${entry.isUndone ? "undone" : ""}`}
                   style={entry.color ? { borderLeft: `3px solid ${entry.color}`, paddingLeft: 6 } : {}}
                 >
-                  <small>{entry.text}</small>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <small style={entry.isUndone ? { textDecoration: "line-through", opacity: 0.6 } : {}}>
+                      {entry.text}
+                    </small>
+                    {entry.isTransaction && !entry.isUndone && entry.originalTime && entry.from !== undefined && entry.to !== undefined && entry.amount !== undefined && (
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        className="ml-2 py-0 px-1"
+                        style={{ fontSize: "0.65rem", lineHeight: 1 }}
+                        onClick={() => proposeTransactionUndo(entry.originalTime!, entry.from!, entry.to!, entry.amount!)}
+                      >
+                        ↩ Undo
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))
             )}

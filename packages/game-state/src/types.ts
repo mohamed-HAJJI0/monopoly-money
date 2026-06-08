@@ -20,6 +20,7 @@ export interface IGameState {
   startingBalance: number;
   passGoAmount: number;
   open: boolean;
+  undoneTransactions: string[];
 }
 
 // Game events
@@ -31,6 +32,7 @@ export type GameEvent =
   | IPlayerColorChangeEvent
   | IPlayerBankerStatusChangeEvent
   | ITransactionEvent
+  | ITransactionUndoEvent
   | IGameOpenStateChangeEvent
   | IUseFreeParkingChangeEvent
   | IShowOppositionBalancesChangeEvent
@@ -75,6 +77,14 @@ export interface IPlayerBankerStatusChangeEvent extends IGameEvent {
 
 export interface ITransactionEvent extends IGameEvent {
   type: "transaction";
+  from: GameEntity;
+  to: GameEntity;
+  amount: number;
+}
+
+export interface ITransactionUndoEvent extends IGameEvent {
+  type: "transactionUndo";
+  originalTime: string;
   from: GameEntity;
   to: GameEntity;
   amount: number;

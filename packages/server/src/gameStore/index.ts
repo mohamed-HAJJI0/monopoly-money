@@ -15,6 +15,9 @@ class GameStore {
     // Add the user that created this game and set them as a banker
     const game = this.games[gameId];
 
+    // Inject fake players & transactions for testing
+    game.injectFakeData();
+
     if (role === "banker") {
       // Banker-only host: no player account, just an admin token
       const { userToken, playerId } = game.addBankerHost();

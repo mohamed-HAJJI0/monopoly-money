@@ -1,11 +1,13 @@
 import {
   calculateGameState,
   defaultGameState,
+  GameEntity,
   GameEvent,
   IGameState
 } from "@monopoly-money/game-state";
 import { DateTime } from "luxon";
 import React from "react";
+import { Button } from "react-bootstrap";
 import { bankName, freeParkingName } from "../../constants";
 import { formatCurrency } from "../../utils";
 import "./History.scss";
@@ -13,11 +15,13 @@ import "./History.scss";
 interface IHistoryProps {
   events: GameEvent[];
   role: "player" | "banker";
+  isBanker: boolean;
+  proposeTransactionUndo: (originalTime: string, from: GameEntity, to: GameEntity, amount: number) => void;
 }
 
 const BANKER_HOST_PLAYER_ID = "banker-host";
 
-const History: React.FC<IHistoryProps> = ({ events }) => {
+const History: React.FC<IHistoryProps> = ({ events, isBanker, proposeTransactionUndo }) => {
   let currentGameState = defaultGameState;
   const details = events.map((event) => {
     const nextState = calculateGameState([event], currentGameState);
@@ -30,7 +34,10 @@ const History: React.FC<IHistoryProps> = ({ events }) => {
     <div className="history">
       {details.reverse().map((eventDetail) =>
         eventDetail === null ? null : (
-          <div key={eventDetail.id} className="event mb-2">
+          <div
+            key={eventDetail.id}
+            className={`event mb-2 ${eventDetail.isUndone ? "undone" : ""}`}
+          >
             <div className="bar" style={{ background: `var(--${eventDetail.colour})` }} />
             <div className="event-details">
               <div className="top">
@@ -42,7 +49,22 @@ const History: React.FC<IHistoryProps> = ({ events }) => {
                   {eventDetail.time}
                 </small>
               </div>
-              <div className="detail">{eventDetail.detail}</div>
+              <div className="detail">
+                <span style={eventDetail.isUndone ? { textDecoration: "line-through", opacity: 0.6 } : {}}>
+                  {eventDetail.detail}
+                </span>
+                {eventDetail.isTransaction && !eventDetail.isUndone && isBanker && eventDetail.originalTime && eventDetail.from !== undefined && eventDetail.to !== undefined && eventDetail.amount !== undefined && (
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    className="ml-2 py-0 px-1"
+                    style={{ fontSize: "0.7rem", lineHeight: 1.2 }}
+                    onClick={() => proposeTransactionUndo(eventDetail.originalTime!, eventDetail.from!, eventDetail.to!, eventDetail.amount!)}
+                  >
+                    ↩ Undo
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )
@@ -57,7 +79,13 @@ interface IEventDetail {
   actionedBy: string | null;
   time: string;
   detail: string;
-  colour: "blue" | "red" | "orange" | "yellow" | "green" | "cyan"; // https://getbootstrap.com/docs/4.0/getting-started/theming/#all-colors
+  colour: "blue" | "red" | "orange" | "yellow" | "green" | "cyan";
+  isTransaction: boolean;
+  isUndone: boolean;
+  originalTime?: string;
+  from?: GameEntity;
+  to?: GameEntity;
+  amount?: number;
 }
 
 const getEventDetails = (
@@ -85,7 +113,9 @@ const getEventDetails = (
         title: "Player Join",
         actionedBy: null,
         detail: `${player.name} joined`,
-        colour: "cyan"
+        colour: "cyan",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -97,7 +127,9 @@ const getEventDetails = (
         title: "Player Banker Status Change",
         actionedBy,
         detail: `${player.name} was made a banker`,
-        colour: "yellow"
+        colour: "yellow",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -116,12 +148,44 @@ const getEventDetails = (
             : nextState.players.find((p) => p.playerId === event.from)!.name;
       const actionedBy = getPlayerName(event.actionedBy, previousState);
       const fromPlayerId = event.actionedBy;
+      const isUndone = nextState.undoneTransactions.includes(event.time);
       return {
         ...defaults,
         title: `Transaction`,
         actionedBy: fromPlayerId === event.from ? null : actionedBy,
         detail: `${playerGiving} → ${playerReceiving} (${formatCurrency(event.amount)})`,
-        colour: "green"
+        colour: isUndone ? "red" : "green",
+        isTransaction: true,
+        isUndone,
+        originalTime: event.time,
+        from: event.from,
+        to: event.to,
+        amount: event.amount
+      };
+    }
+
+    case "transactionUndo": {
+      const playerReceiving =
+        event.to === "bank"
+          ? bankName
+          : event.to === "freeParking"
+            ? freeParkingName
+            : nextState.players.find((p) => p.playerId === event.to)!.name;
+      const playerGiving =
+        event.from === "bank"
+          ? bankName
+          : event.from === "freeParking"
+            ? freeParkingName
+            : nextState.players.find((p) => p.playerId === event.from)!.name;
+      const actionedBy = getPlayerName(event.actionedBy, previousState);
+      return {
+        ...defaults,
+        title: "Transaction Undo",
+        actionedBy,
+        detail: `↩ Undone: ${playerGiving} → ${playerReceiving} (${formatCurrency(event.amount)})`,
+        colour: "red",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -138,7 +202,9 @@ const getEventDetails = (
         title: "Player Name Change",
         actionedBy: event.actionedBy === event.playerId ? null : actionedBy,
         detail: `${playerNameBeforeRename} was renamed to ${playerNameAfterRename}`,
-        colour: "orange"
+        colour: "orange",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -150,7 +216,9 @@ const getEventDetails = (
         title: "Player Removal",
         actionedBy: event.actionedBy === event.playerId ? null : actionedBy,
         detail: `${playerName} was removed from the game`,
-        colour: "red"
+        colour: "red",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -161,7 +229,9 @@ const getEventDetails = (
         title: "Game Open State Change",
         actionedBy,
         detail: `The game is now ${event.open ? "open" : "closed"} to new players`,
-        colour: "blue"
+        colour: "blue",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -174,7 +244,9 @@ const getEventDetails = (
         detail: `The Free Parking house rule is now ${
           event.useFreeParking ? "enabled" : "disabled"
         }`,
-        colour: "blue"
+        colour: "blue",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -185,7 +257,9 @@ const getEventDetails = (
         title: "Show Opposition Balances State Change",
         actionedBy,
         detail: `Opposition balances are now ${event.showOppositionBalances ? "shown" : "hidden"}`,
-        colour: "blue"
+        colour: "blue",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -196,7 +270,9 @@ const getEventDetails = (
         title: "Starting Balance Changed",
         actionedBy,
         detail: `Starting balance set to ${formatCurrency(event.startingBalance)}`,
-        colour: "blue"
+        colour: "blue",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -207,7 +283,9 @@ const getEventDetails = (
         title: "Pass GO Amount Changed",
         actionedBy,
         detail: `Pass GO amount set to ${formatCurrency(event.passGoAmount)}`,
-        colour: "blue"
+        colour: "blue",
+        isTransaction: false,
+        isUndone: false
       };
     }
 
@@ -219,7 +297,9 @@ const getEventDetails = (
         title: "Player Color Changed",
         actionedBy,
         detail: `${player.name} changed to ${event.color}`,
-        colour: "cyan"
+        colour: "cyan",
+        isTransaction: false,
+        isUndone: false
       };
     }
 

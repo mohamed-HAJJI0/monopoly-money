@@ -15,6 +15,7 @@ import {
   IShowOppositionBalancesChangeEvent,
   IStartingBalanceChangeEvent,
   ITransactionEvent,
+  ITransactionUndoEvent,
   IUseFreeParkingChangeEvent,
   PlayerId
 } from "./types";
@@ -36,6 +37,7 @@ export {
   IShowOppositionBalancesChangeEvent,
   IStartingBalanceChangeEvent,
   ITransactionEvent,
+  ITransactionUndoEvent,
   IUseFreeParkingChangeEvent,
   IPassGoAmountChangeEvent,
   PlayerId

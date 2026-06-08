@@ -135,6 +135,11 @@
       padding: 2px 0;
       border-bottom: 1px solid var(--hr-border);
       word-break: break-word;
+
+      &.undone {
+        opacity: 0.5;
+        background-color: var(--light);
+      }
     }
   }
 

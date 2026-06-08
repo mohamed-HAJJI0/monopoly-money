@@ -12,6 +12,7 @@ import {
   IShowOppositionBalancesChangeEvent,
   IStartingBalanceChangeEvent,
   ITransactionEvent,
+  ITransactionUndoEvent,
   IUseFreeParkingChangeEvent
 } from "@monopoly-money/game-state";
 import {
@@ -124,6 +125,20 @@ class GameHandler {
       time: "", // Will be filled in by the server
       actionedBy: "", // Will be filled in by the server
       type: "transaction",
+      from,
+      to,
+      amount
+    };
+    this.submitEvent(event);
+  }
+
+  // Propose undoing a transaction
+  public proposeTransactionUndo(originalTime: string, from: GameEntity, to: GameEntity, amount: number) {
+    const event: ITransactionUndoEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "transactionUndo",
+      originalTime,
       from,
       to,
       amount

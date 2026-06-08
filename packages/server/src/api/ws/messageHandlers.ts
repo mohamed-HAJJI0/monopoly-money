@@ -128,14 +128,18 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
           return;
         }
         break;
-      case "startingBalanceChange":
+      case "passGoAmountChange":
         if (!isPlayerBanker) {
           return;
         }
         break;
-      case "passGoAmountChange":
+      case "transactionUndo":
         if (!isPlayerBanker) {
-          return;
+          return; // Only bankers can undo transactions
+        }
+        // Check if the transaction has already been undone
+        if (game.getGameState().undoneTransactions.includes(event.originalTime)) {
+          return; // Cannot undo a transaction twice
         }
         break;
       case "playerConnectionChange":
