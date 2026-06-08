@@ -237,80 +237,83 @@ const Bank: React.FC<IBankProps> = ({
 
   return (
     <div className="bank-page">
-      {/* Top controls */}
-      <div className="controls-bar d-flex justify-content-between align-items-center mb-2">
-        <div className="d-flex align-items-center gap-2">
-          <span className="text-muted small">Layout:</span>
-          <ButtonGroup size="sm">
-            <Button
-              variant={layout === "column" ? "primary" : "outline-primary"}
-              onClick={() => setLayout("column")}
-            >
-              Column
-            </Button>
-            <Button
-              variant={layout === "grid" ? "primary" : "outline-primary"}
-              onClick={() => setLayout("grid")}
-            >
-              Grid
-            </Button>
-          </ButtonGroup>
-        </div>
-        <div className="d-flex align-items-center gap-2">
-          <span className="text-muted small">Buttons:</span>
-          <ButtonGroup size="sm">
-            {(["sm", "lg"] as const).map((s) => (
+      {/* Left panel: controls + players */}
+      <div className="left-panel">
+        <div className="controls-bar d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-2">
+            <span className="text-muted small">Layout:</span>
+            <ButtonGroup size="sm">
               <Button
-                key={s}
-                variant={buttonSize === s ? "secondary" : "outline-secondary"}
-                onClick={() => setButtonSize(s)}
+                variant={layout === "column" ? "primary" : "outline-primary"}
+                onClick={() => setLayout("column")}
               >
-                {s.toUpperCase()}
+                Column
               </Button>
-            ))}
-          </ButtonGroup>
-        </div>
-        {!hasATransactionBeenMade && (
-          <Button variant="outline-primary" size="sm" onClick={handleInitialize}>
-            Init All to {formatCurrency(startingBalance)}
-          </Button>
-        )}
-      </div>
-
-      {/* Players area (2/3) */}
-      <div className={`players-area ${layout}`}>
-        {players.map(renderPlayerCard)}
-
-        {useFreeParking && freeParkingBalance > 0 && (
-          <Card className="free-parking-card">
-            <Card.Body className="p-2 text-center">
-              <strong>🚗 Free Parking:</strong> {formatCurrency(freeParkingBalance)}
-            </Card.Body>
-          </Card>
-        )}
-      </div>
-
-      {/* Log area (1/3) */}
-      <div className="log-area">
-        <div className="log-header d-flex justify-content-between align-items-center">
-          <strong className="small">Transaction Log</strong>
-          <span className="text-muted small">{logEntries.length} events</span>
-        </div>
-        <div className="log-messages">
-          {logEntries.length === 0 ? (
-            <div className="text-muted text-center small">No transactions yet</div>
-          ) : (
-            logEntries.map((entry, idx) => (
-              <div
-                key={idx}
-                className="log-message"
-                style={entry.color ? { borderLeft: `3px solid ${entry.color}`, paddingLeft: 6 } : {}}
+              <Button
+                variant={layout === "grid" ? "primary" : "outline-primary"}
+                onClick={() => setLayout("grid")}
               >
-                <small>{entry.text}</small>
-              </div>
-            ))
+                Grid
+              </Button>
+            </ButtonGroup>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <span className="text-muted small">Buttons:</span>
+            <ButtonGroup size="sm">
+              {(["sm", "lg"] as const).map((s) => (
+                <Button
+                  key={s}
+                  variant={buttonSize === s ? "secondary" : "outline-secondary"}
+                  onClick={() => setButtonSize(s)}
+                >
+                  {s.toUpperCase()}
+                </Button>
+              ))}
+            </ButtonGroup>
+          </div>
+          {!hasATransactionBeenMade && (
+            <Button variant="outline-primary" size="sm" onClick={handleInitialize}>
+              Init All to {formatCurrency(startingBalance)}
+            </Button>
           )}
-          <div ref={logEndRef} />
+        </div>
+
+        <div className={`players-area ${layout}`}>
+          {players.map(renderPlayerCard)}
+
+          {useFreeParking && freeParkingBalance > 0 && (
+            <Card className="free-parking-card">
+              <Card.Body className="p-2 text-center">
+                <strong>🚗 Free Parking:</strong> {formatCurrency(freeParkingBalance)}
+              </Card.Body>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Right panel: transaction log */}
+      <div className="right-panel">
+        <div className="log-area">
+          <div className="log-header d-flex justify-content-between align-items-center">
+            <strong className="small">Transaction Log</strong>
+            <span className="text-muted small">{logEntries.length} events</span>
+          </div>
+          <div className="log-messages">
+            {logEntries.length === 0 ? (
+              <div className="text-muted text-center small">No transactions yet</div>
+            ) : (
+              logEntries.map((entry, idx) => (
+                <div
+                  key={idx}
+                  className="log-message"
+                  style={entry.color ? { borderLeft: `3px solid ${entry.color}`, paddingLeft: 6 } : {}}
+                >
+                  <small>{entry.text}</small>
+                </div>
+              ))
+            )}
+            <div ref={logEndRef} />
+          </div>
         </div>
       </div>
 
