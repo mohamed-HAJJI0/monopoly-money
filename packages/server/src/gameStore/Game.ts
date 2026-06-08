@@ -162,7 +162,7 @@ export default class Game {
 
     // If all bankers have removed themselves, end the game
     const bankerPlayers = this.gameState.players.filter((p) => p.banker);
-    if (bankerPlayers.length === 0) {
+    if (bankerPlayers.length === 0 && this.adminTokens.length === 0) {
       this.endGame();
     }
   };
