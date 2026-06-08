@@ -8,6 +8,26 @@
       position: absolute;
     }
   }
+
+  .user-card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--body-color);
+
+    .color-dot-lg {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+
+      &.empty {
+        background-color: #e0e0e0;
+        border: 2px dashed #999;
+      }
+    }
+  }
 }
 
 .player-card {
