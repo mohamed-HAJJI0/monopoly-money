@@ -1,4 +1,4 @@
-import { GameEntity, GameEvent, IGameStatePlayer } from "@monopoly-money/game-state";
+import { GameEntity, GameEvent, IGameStatePlayer, PRESET_PLAYER_COLORS } from "@monopoly-money/game-state";
 import React, { useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
 import { useModal } from "react-modal-hook";
@@ -19,6 +19,7 @@ interface IFundsProps {
   showOppositionBalances: boolean;
   freeParkingBalance: number;
   proposeTransaction: (from: GameEntity, to: GameEntity, amount: number) => void;
+  proposePlayerColorChange: (playerId: string, color: string) => void;
   events: GameEvent[];
 }
 
@@ -31,11 +32,14 @@ const Funds: React.FC<IFundsProps> = ({
   freeParkingBalance,
   showOppositionBalances,
   proposeTransaction,
+  proposePlayerColorChange,
   events
 }) => {
   const [recipient, setRecipient] = useState<IGameStatePlayer | "freeParking" | "bank" | null>(
     null
   );
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
   const [showSendMoneyModal, hideSendMoneyModal] = useModal(
     () => (
       <>
@@ -43,6 +47,7 @@ const Funds: React.FC<IFundsProps> = ({
           <SendMoneyModal
             balance={me?.balance ?? 0}
             playerId={playerId}
+            gameId={gameId}
             recipient={recipient}
             proposeTransaction={proposeTransaction}
             onClose={() => setRecipient(null)}
@@ -65,34 +70,23 @@ const Funds: React.FC<IFundsProps> = ({
   const me = players.find((p) => p.playerId === playerId);
   const isBanker = me?.banker ?? false;
 
+  const takenColors = players
+    .filter((p) => p.playerId !== playerId && p.color)
+    .map((p) => p.color!);
+
+  const otherPlayers = sortPlayersByName(players.filter((p) => p.playerId !== playerId));
+
   return (
     <div className="funds">
+      {/* Game code button */}
       {isGameOpen && <GameCode gameId={gameId} isBanker={isBanker} />}
 
-      <Card className="mb-1 text-center">
-        {me !== undefined && (
-          <Card.Body className="p-3">
-            {me.name}: {formatCurrency(me.balance)}
-          </Card.Body>
-        )}
-      </Card>
-
-      <div className="mb-1 balance-grid">
-        {sortPlayersByName(players.filter((p) => p.playerId !== playerId)).map((player) => (
-          <PlayerCard
-            key={player.playerId}
-            name={player.name}
-            connected={player.connected}
-            balance={showOppositionBalances ? player.balance : null}
-            onClick={() => setRecipient(player)}
-          />
-        ))}
-      </div>
-
-      <div className="balance-grid">
+      {/* Bank & Free Parking */}
+      <div className="mb-3 balance-grid">
         {useFreeParking && (
           <PlayerCard
             name={freeParkingName}
+            color={null}
             connected={null}
             balance={freeParkingBalance}
             onClick={() => setRecipient("freeParking")}
@@ -100,13 +94,117 @@ const Funds: React.FC<IFundsProps> = ({
         )}
         <PlayerCard
           name={bankName}
+          color={null}
           connected={null}
           balance={Number.POSITIVE_INFINITY}
           onClick={() => setRecipient("bank")}
         />
       </div>
 
-      <div className="mt-2">
+      {/* Current user card */}
+      {me !== undefined && (
+        <Card className="mb-3 user-card">
+          <Card.Body className="p-3 text-center">
+            <div
+              className="d-flex align-items-center justify-content-center gap-2"
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowColorPicker(!showColorPicker)}
+            >
+              {me.color ? (
+                <span
+                  className="color-dot-lg"
+                  style={{ backgroundColor: me.color }}
+                  title="Click to change color"
+                />
+              ) : (
+                <span className="color-dot-lg empty" title="Click to pick a color" />
+              )}
+              <div>
+                <div className="font-weight-bold" style={{ fontSize: "1.1rem" }}>
+                  {me.name}
+                </div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
+                  {formatCurrency(me.balance)}
+                </div>
+              </div>
+            </div>
+
+            {/* Color picker popup */}
+            {showColorPicker && (
+              <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--card-border)" }}>
+                <div
+                  className="small mb-2"
+                  style={{ color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}
+                >
+                  Pick Your Color
+                </div>
+                <div className="d-flex justify-content-center flex-wrap gap-2">
+                  {PRESET_PLAYER_COLORS.map((c) => {
+                    const isTaken = takenColors.includes(c);
+                    const isMine = me.color === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => {
+                          if (!isTaken) {
+                            proposePlayerColorChange(playerId, c);
+                            setShowColorPicker(false);
+                          }
+                        }}
+                        disabled={isTaken}
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          backgroundColor: c,
+                          border: isMine ? "3px solid var(--body-color)" : "2px solid transparent",
+                          cursor: isTaken ? "not-allowed" : "pointer",
+                          opacity: isTaken ? 0.3 : 1,
+                          boxShadow: isMine
+                            ? "0 0 0 2px var(--body-bg), 0 0 0 4px " + c
+                            : "none",
+                          transition: "transform 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isTaken) (e.target as HTMLElement).style.transform = "scale(1.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.target as HTMLElement).style.transform = "scale(1)";
+                        }}
+                        aria-label={isTaken ? `Color ${c} taken` : `Select color ${c}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </Card.Body>
+        </Card>
+      )}
+
+      {/* Other players */}
+      <div className="mb-2">
+        <div
+          className="small mb-2 px-1"
+          style={{ color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}
+        >
+          Players
+        </div>
+        <div className="balance-grid">
+          {otherPlayers.map((player) => (
+            <PlayerCard
+              key={player.playerId}
+              name={player.name}
+              color={player.color}
+              connected={player.connected}
+              balance={showOppositionBalances ? player.balance : null}
+              onClick={() => setRecipient(player)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-3">
         <RecentTransactions events={events} players={players} />
       </div>
     </div>

@@ -1,15 +1,10 @@
-import {
-  GameEntity,
-  GameEvent,
-  IGameStatePlayer,
-  ITransactionEvent
-} from "@monopoly-money/game-state";
+import { GameEntity, GameEvent, IGameStatePlayer, ITransactionEvent } from "@monopoly-money/game-state";
 import { DateTime } from "luxon";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { bankName, freeParkingName } from "../../constants";
 import { formatCurrency } from "../../utils";
 
-const visibilityDurationMilliseconds = 40_000;
+const MAX_ENTRIES = 25;
 
 interface IRecentTransactionsProps {
   events: GameEvent[];
@@ -17,72 +12,38 @@ interface IRecentTransactionsProps {
 }
 
 const RecentTransactions: React.FC<IRecentTransactionsProps> = ({ events, players }) => {
-  const [displayedTransactions, setDisplayedTransactions] = useState<ITransactionEvent[]>([]);
-
   const getEntityName = (entity: GameEntity) => {
-    if (entity === "freeParking") {
-      return freeParkingName;
-    } else if (entity === "bank") {
-      return bankName;
-    } else {
-      const player = players.find((p) => p.playerId === entity);
-      return player?.name ?? "[Deleted User]";
-    }
+    if (entity === "freeParking") return freeParkingName;
+    if (entity === "bank") return bankName;
+    return players.find((p) => p.playerId === entity)?.name ?? "[Deleted User]";
   };
 
-  useEffect(() => {
-    const transactions = events.filter((e): e is ITransactionEvent => e.type === "transaction");
-    transactions.forEach((transaction) => {
-      if (
-        -DateTime.fromISO(transaction.time).diffNow().as("milliseconds") <
-        visibilityDurationMilliseconds
-      ) {
-        setDisplayedTransactions((current) => [
-          ...current.filter((t) => t.time !== transaction.time),
-          transaction
-        ]);
-        setTimeout(() => {
-          setDisplayedTransactions((current) => current.filter((t) => t.time !== transaction.time));
-        }, visibilityDurationMilliseconds);
-      }
-    });
-  }, [events.length]); // Have to use events.length as we mutate the events
+  const transactions = events
+    .filter((e): e is ITransactionEvent => e.type === "transaction")
+    .slice(-MAX_ENTRIES)
+    .reverse();
+
+  const getTimeAgo = (time: string): string => {
+    const seconds = Math.floor(-DateTime.fromISO(time).diffNow().as("seconds"));
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    return `${Math.floor(minutes / 60)}h ago`;
+  };
 
   return (
-    <div className="recent-transactions text-center">
-      {displayedTransactions.map((t) => (
+    <div className="recent-transactions text-center mt-2">
+      {transactions.length === 0 && (
+        <small style={{ color: "var(--text-muted)" }}>No recent transactions</small>
+      )}
+      {transactions.map((t) => (
         <small key={t.time} className="d-block">
           {getEntityName(t.from)} → {getEntityName(t.to)} ({formatCurrency(t.amount)}){" "}
-          <SecondsSinceLabel transactionTime={DateTime.fromISO(t.time)} />
+          <span style={{ color: "var(--text-muted)", opacity: 0.7 }}>{getTimeAgo(t.time)}</span>
         </small>
       ))}
     </div>
   );
-};
-
-interface SecondsSinceLabelProps {
-  transactionTime: DateTime;
-}
-
-const SecondsSinceLabel = ({ transactionTime }: SecondsSinceLabelProps) => {
-  const [seconds, setSeconds] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout>();
-
-  // Check duration since every 5s and round down to nearest 5s to display
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      const secondsSince = -transactionTime.diffNow().as("seconds");
-      setSeconds(Math.floor(secondsSince));
-    }, 1_000);
-
-    return () => {
-      if (intervalRef.current !== undefined) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [intervalRef]);
-
-  return <span className="text-muted">({seconds}s ago)</span>;
 };
 
 export default RecentTransactions;

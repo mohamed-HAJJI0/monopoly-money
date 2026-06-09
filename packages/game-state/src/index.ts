@@ -5,13 +5,17 @@ import {
   IGameOpenStateChangeEvent,
   IGameState,
   IGameStatePlayer,
+  IPassGoAmountChangeEvent,
   IPlayerBankerStatusChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerDeleteEvent,
   IPlayerJoinEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
+  IStartingBalanceChangeEvent,
   ITransactionEvent,
+  ITransactionUndoEvent,
   IUseFreeParkingChangeEvent,
   PlayerId
 } from "./types";
@@ -25,12 +29,18 @@ export {
   IGameState,
   IGameStatePlayer,
   IPlayerBankerStatusChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerDeleteEvent,
   IPlayerJoinEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
+  IStartingBalanceChangeEvent,
   ITransactionEvent,
+  ITransactionUndoEvent,
   IUseFreeParkingChangeEvent,
+  IPassGoAmountChangeEvent,
   PlayerId
 };
+
+export { PRESET_PLAYER_COLORS } from "./state";

@@ -1,11 +1,32 @@
 import { GameEvent, IGameState } from "./types";
 
+export const PRESET_PLAYER_COLORS = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#d946ef",
+  "#f43f5e",
+  "#14b8a6",
+  "#84cc16",
+  "#f59e0b"
+];
+
+const getDefaultColor = (playerCount: number): string =>
+  PRESET_PLAYER_COLORS[playerCount % PRESET_PLAYER_COLORS.length];
+
 export const defaultGameState: IGameState = {
   players: [],
   useFreeParking: true,
   showOppositionBalances: true,
   freeParkingBalance: 0,
-  open: true
+  startingBalance: 1500,
+  passGoAmount: 200,
+  open: true,
+  undoneTransactions: []
 };
 
 export const calculateGameState = (events: GameEvent[], currentState: IGameState): IGameState => {
@@ -19,8 +40,9 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
             {
               playerId: event.playerId,
               name: event.name,
+              color: event.color || getDefaultColor(state.players.length),
               banker: false,
-              balance: 0,
+              balance: state.startingBalance,
               connected: false
             }
           ]
@@ -40,6 +62,19 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
               ? {
                   ...p,
                   name: event.name
+                }
+              : p
+          )
+        };
+
+      case "playerColorChange":
+        return {
+          ...state,
+          players: state.players.map((p) =>
+            p.playerId === event.playerId
+              ? {
+                  ...p,
+                  color: event.color
                 }
               : p
           )
@@ -118,6 +153,75 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
             ]
           };
         }
+      case "transactionUndo": {
+        // Mark the original transaction as undone
+        const undoneTransactions = [...state.undoneTransactions, event.originalTime];
+        // Apply the reverse transaction (swap from/to)
+        const reverseFrom = event.to;
+        const reverseTo = event.from;
+        if (reverseFrom === "bank" || reverseFrom === "freeParking") {
+          const destinationPlayer = state.players.find((p) => p.playerId === reverseTo);
+          if (destinationPlayer === undefined) {
+            throw new Error("Unable to find destination player for undo");
+          }
+          return {
+            ...state,
+            undoneTransactions,
+            players: [
+              ...state.players.filter((p) => p.playerId !== reverseFrom && p.playerId !== reverseTo),
+              {
+                ...destinationPlayer,
+                balance: destinationPlayer.balance + event.amount
+              }
+            ],
+            freeParkingBalance:
+              reverseFrom === "freeParking"
+                ? state.freeParkingBalance - event.amount
+                : state.freeParkingBalance
+          };
+        } else if (reverseTo === "bank" || reverseTo === "freeParking") {
+          const sourcePlayer = state.players.find((p) => p.playerId === reverseFrom);
+          if (sourcePlayer === undefined) {
+            throw new Error("Unable to find source player for undo");
+          }
+          return {
+            ...state,
+            undoneTransactions,
+            players: [
+              ...state.players.filter((p) => p.playerId !== reverseFrom && p.playerId !== reverseTo),
+              {
+                ...sourcePlayer,
+                balance: sourcePlayer.balance - event.amount
+              }
+            ],
+            freeParkingBalance:
+              reverseTo === "freeParking"
+                ? state.freeParkingBalance + event.amount
+                : state.freeParkingBalance
+          };
+        } else {
+          const sourcePlayer = state.players.find((p) => p.playerId === reverseFrom);
+          const destinationPlayer = state.players.find((p) => p.playerId === reverseTo);
+          if (sourcePlayer === undefined || destinationPlayer === undefined) {
+            throw new Error("Unable to find source or destination player for undo");
+          }
+          return {
+            ...state,
+            undoneTransactions,
+            players: [
+              ...state.players.filter((p) => p.playerId !== reverseFrom && p.playerId !== reverseTo),
+              {
+                ...sourcePlayer,
+                balance: sourcePlayer.balance - event.amount
+              },
+              {
+                ...destinationPlayer,
+                balance: destinationPlayer.balance + event.amount
+              }
+            ]
+          };
+        }
+      }
       case "gameOpenStateChange":
         return {
           ...state,
@@ -134,6 +238,18 @@ export const calculateGameState = (events: GameEvent[], currentState: IGameState
         return {
           ...state,
           showOppositionBalances: event.showOppositionBalances
+        };
+
+      case "startingBalanceChange":
+        return {
+          ...state,
+          startingBalance: event.startingBalance
+        };
+
+      case "passGoAmountChange":
+        return {
+          ...state,
+          passGoAmount: event.passGoAmount
         };
 
       case "playerConnectionChange":

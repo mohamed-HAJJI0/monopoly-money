@@ -1,9 +1,33 @@
 .settings {
+  padding: 1rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+
   .connected-state-dot {
     margin: auto;
   }
 
   .player-row td {
     vertical-align: middle;
+  }
+
+  .qr-section {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+  }
+
+  .settings-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .settings-btn {
+    margin-bottom: 0.75rem;
+    border-radius: calc(var(--radius) * 0.6);
+    font-weight: 500;
   }
 }

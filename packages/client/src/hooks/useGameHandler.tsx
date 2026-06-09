@@ -9,20 +9,26 @@ export interface IGameHandlerAuthInfo {
   gameId: string;
   userToken: string;
   playerId: string;
+  role: "player" | "banker";
 }
 
 export interface IGameHandlerState extends IGameState {
   gameId: string;
   playerId: string;
+  role: "player" | "banker";
   isBanker: boolean;
   events: GameEvent[];
   actions: {
     proposeTransaction: (from: GameEntity, to: GameEntity, amount: number) => void;
+    proposeTransactionUndo: (originalTime: string, from: GameEntity, to: GameEntity, amount: number) => void;
     proposePlayerNameChange: (playerId: string, name: string) => void;
+    proposePlayerColorChange: (playerId: string, color: string) => void;
     proposePlayerDelete: (playerId: string) => void;
     proposeGameOpenStateChange: (open: boolean) => void;
     proposeUseFreeParkingChange: (useFreeParking: boolean) => void;
     proposeShowOppositionBalancesChange: (showOppositionBalances: boolean) => void;
+    proposeStartingBalanceChange: (startingBalance: number) => void;
+    proposePassGoAmountChange: (passGoAmount: number) => void;
     proposeGameEnd: () => void;
   };
 }
@@ -61,7 +67,7 @@ const useGameHandler = (): {
   };
 
   // Create / destroy the game handler when new new auth is provided
-  const initializeGame = ({ gameId, userToken, playerId }: IGameHandlerAuthInfo) => {
+  const initializeGame = ({ gameId, userToken, playerId, role }: IGameHandlerAuthInfo) => {
     // If auth has been provided, setup the game handler
     const onGameStateChange = (gameEnded: boolean) => {
       if (gameEnded) {
@@ -71,7 +77,7 @@ const useGameHandler = (): {
       }
     };
     setGameHandler(
-      new GameHandler(gameId, userToken, playerId, onGameStateChange, onDisplayMessage)
+      new GameHandler(gameId, userToken, playerId, role, onGameStateChange, onDisplayMessage)
     );
   };
 
@@ -92,7 +98,8 @@ const useGameHandler = (): {
         : {
             gameId: gameHandler.gameId,
             userToken: gameHandler.userToken,
-            playerId: gameHandler.playerId
+            playerId: gameHandler.playerId,
+            role: gameHandler.role
           },
     game:
       gameHandler === null
@@ -101,17 +108,24 @@ const useGameHandler = (): {
             ...gameHandler.getState(),
             gameId: gameHandler.gameId,
             playerId: gameHandler.playerId,
+            role: gameHandler.role,
             isBanker: gameHandler.amIABanker(),
             events: gameHandler.getEvents(),
             actions: {
               proposeTransaction: gameHandler.proposeTransaction.bind(gameHandler),
+              proposeTransactionUndo: gameHandler.proposeTransactionUndo.bind(gameHandler),
               proposePlayerNameChange: gameHandler.proposePlayerNameChange.bind(gameHandler),
+              proposePlayerColorChange: gameHandler.proposePlayerColorChange.bind(gameHandler),
               proposePlayerDelete: gameHandler.proposePlayerDelete.bind(gameHandler),
               proposeGameOpenStateChange: gameHandler.proposeGameOpenStateChange.bind(gameHandler),
               proposeUseFreeParkingChange:
                 gameHandler.proposeUseFreeParkingChange.bind(gameHandler),
               proposeShowOppositionBalancesChange:
                 gameHandler.proposeShowOppositionBalancesChange.bind(gameHandler),
+              proposeStartingBalanceChange:
+                gameHandler.proposeStartingBalanceChange.bind(gameHandler),
+              proposePassGoAmountChange:
+                gameHandler.proposePassGoAmountChange.bind(gameHandler),
               proposeGameEnd: gameHandler.proposeGameEnd.bind(gameHandler)
             }
           }

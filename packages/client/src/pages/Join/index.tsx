@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 import NumberFormat, { NumberFormatValues } from "react-number-format";
+
 import { createGame, joinGame } from "../../api";
 import Config from "../../config";
 import useStoredGames from "../../hooks/useStoredGames";
@@ -8,7 +9,7 @@ import { getGameIdFromQueryString, trackGameCreated, trackGameJoined } from "../
 
 interface IJoinProps {
   newGame: boolean;
-  onGameSetup: (gameId: string, userToken: string, playerId: string) => void;
+  onGameSetup: (gameId: string, userToken: string, playerId: string, role: "player" | "banker") => void;
 }
 
 const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
@@ -18,6 +19,8 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   const [loading, setLoading] = useState(false);
   const [gameId, setGameId] = useState(getGameIdFromQueryString() ?? "");
   const [name, setName] = useState("");
+  const [role, setRole] = useState<"player" | "banker">("player");
+
   const [gameError, setGameError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [hasServerError, setHasServerError] = useState(false);
@@ -28,7 +31,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   const onSubmit = () => {
     if (isAStoredGame) {
       const storedGame = storedGames.find((g) => g.gameId === gameId)!;
-      onGameSetup(storedGame.gameId, storedGame.userToken, storedGame.playerId);
+      onGameSetup(storedGame.gameId, storedGame.userToken, storedGame.playerId, storedGame.role ?? "player");
     } else if (newGame) {
       // Validity check
       if (name === "") {
@@ -39,9 +42,9 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
 
       // Create game
       setLoading(true);
-      createGame(name)
+      createGame(name, role)
         .then((result) => {
-          onGameSetup(result.gameId, result.userToken, result.playerId);
+          onGameSetup(result.gameId, result.userToken, result.playerId, role);
           trackGameCreated();
         })
         .catch((error) => {
@@ -71,7 +74,7 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
           } else if (result === "NotOpen") {
             setGameError("That game is not open. Ask the banker to open the game.");
           } else {
-            onGameSetup(result.gameId, result.userToken, result.playerId);
+            onGameSetup(result.gameId, result.userToken, result.playerId, "player");
             trackGameJoined();
           }
         })
@@ -84,11 +87,11 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   };
 
   return (
-    <div className="text-center">
-      <h1>{title}</h1>
+    <div className="text-center" style={{ maxWidth: 420, margin: "0 auto" }}>
+      <h2 className="mb-4">{title}</h2>
 
       {!newGame && (
-        <Form.Group>
+        <Form.Group className="mb-3">
           <Form.Label>Game Id</Form.Label>
           <NumberFormat
             allowNegative={false}
@@ -105,11 +108,11 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
       )}
 
       {isAStoredGame ? (
-        <p>
-          <em>You're already in this game - name is not required.</em>
+        <p style={{ color: "var(--text-muted)" }}>
+          <em>You're already in this game — name is not required.</em>
         </p>
       ) : (
-        <Form.Group>
+        <Form.Group className="mb-3">
           <Form.Label>Your Name</Form.Label>
           <Form.Control
             placeholder="Name"
@@ -125,12 +128,46 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
         </Form.Group>
       )}
 
-      <Button block variant="primary" onClick={onSubmit} disabled={loading}>
+      {newGame && (
+        <Form.Group className="mt-4 mb-4">
+          <Form.Label>Your Role</Form.Label>
+          <div>
+            <ToggleButtonGroup
+              type="radio"
+              name="role"
+              value={role}
+              onChange={(val: "player" | "banker") => setRole(val)}
+            >
+              <ToggleButton
+                id="role-player"
+                value="player"
+                variant={role === "player" ? "primary" : "outline-primary"}
+              >
+                Player
+              </ToggleButton>
+              <ToggleButton
+                id="role-banker"
+                value="banker"
+                variant={role === "banker" ? "primary" : "outline-primary"}
+              >
+                Banker Only
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+          <Form.Text style={{ color: "var(--text-muted)" }}>
+            {role === "player"
+              ? "You'll play and manage the bank."
+              : "You won't be a player — you'll only manage the bank."}
+          </Form.Text>
+        </Form.Group>
+      )}
+
+      <Button block variant="primary" onClick={onSubmit} disabled={loading} className="mt-3">
         {newGame ? "Create" : "Join"}
       </Button>
 
       {hasServerError && (
-        <p style={{ color: "var(--danger)" }} className="mt-2">
+        <p style={{ color: "var(--danger)" }} className="mt-3">
           {Config.api.unreachableErrorMessage.split("\n").map((line, i, arr) => (
             <React.Fragment key={line}>
               {line}

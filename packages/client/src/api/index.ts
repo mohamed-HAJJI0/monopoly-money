@@ -6,13 +6,13 @@ import {
 } from "@monopoly-money/server/build/api/dto";
 import config from "../config";
 
-export const createGame = (name: string): Promise<IJoinGameResponse> => {
+export const createGame = (name: string, role: "player" | "banker" = "player"): Promise<IJoinGameResponse> => {
   return fetch(`${config.api.root}/api/game`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ name } as ICreateGameRequest)
+    body: JSON.stringify({ name, role } as ICreateGameRequest)
   }).then((r) => {
     if (r.status === 200) {
       return r.json() as Promise<IJoinGameResponse>;

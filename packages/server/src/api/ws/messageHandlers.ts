@@ -1,5 +1,6 @@
 import * as websocket from "ws";
 import gameStore from "../../gameStore";
+import { BANKER_HOST_PLAYER_ID } from "../../gameStore/Game";
 import { IncomingMessage } from "../dto";
 import { IUserData } from "../types";
 
@@ -27,6 +28,13 @@ export const onMessageStreamClosed = (ws: websocket, userData: IUserData) => {
   if (userData.gameId !== null && userData.userToken !== null && isAuthenticated(ws, userData)) {
     const game = gameStore.getGame(userData.gameId);
     const playerId = game.getPlayerId(userData.userToken);
+
+    // Skip cleanup for banker-only hosts
+    if (playerId === BANKER_HOST_PLAYER_ID) {
+      game.removePlayerWebSocket(playerId);
+      return;
+    }
+
     game.removePlayerWebSocket(playerId);
 
     // Tell the game that this player is now disconnected
@@ -88,21 +96,57 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
         ) {
           return; // If a user is not a banker, they cannot send money from anyone but themselves
         }
+        // Banker-only hosts cannot send from themselves since they have no player account
+        if (playerId === BANKER_HOST_PLAYER_ID && event.from === BANKER_HOST_PLAYER_ID) {
+          return;
+        }
         break;
       case "playerNameChange":
         if (!isPlayerBanker && playerId !== event.playerId) {
           return; // Only a banker or the modified player can change their name
         }
         break;
+      case "playerColorChange": {
+        if (!isPlayerBanker && playerId !== event.playerId) {
+          return; // Only a banker or the modified player can change their color
+        }
+        // Check if another player already has this color
+        const colorTakenByAnother = game
+          .getGameState()
+          .players.some((p) => p.playerId !== event.playerId && p.color === event.color);
+        if (colorTakenByAnother) {
+          return; // Color is already taken by another player
+        }
+        break;
+      }
       case "playerDelete":
         if (!isPlayerBanker && playerId !== event.playerId) {
           return; // Only a banker or the player themselves can remove a player from the game
+        }
+        // Banker-only hosts cannot delete themselves (they have no player account)
+        if (playerId === BANKER_HOST_PLAYER_ID && event.playerId === BANKER_HOST_PLAYER_ID) {
+          return;
+        }
+        break;
+      case "passGoAmountChange":
+        if (!isPlayerBanker) {
+          return;
+        }
+        break;
+      case "transactionUndo":
+        if (!isPlayerBanker) {
+          return; // Only bankers can undo transactions
+        }
+        // Check if the transaction has already been undone
+        if (game.getGameState().undoneTransactions.includes(event.originalTime)) {
+          return; // Cannot undo a transaction twice
         }
         break;
       case "playerConnectionChange":
         if (event.playerId !== playerId) {
           return; // Players can only update their own connection status
         }
+        break;
     }
 
     game.addEvent(event, playerId);

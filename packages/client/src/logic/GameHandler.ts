@@ -5,10 +5,14 @@ import {
   GameEvent,
   IGameOpenStateChangeEvent,
   IGameState,
+  IPassGoAmountChangeEvent,
+  IPlayerColorChangeEvent,
   IPlayerDeleteEvent,
   IPlayerNameChangeEvent,
   IShowOppositionBalancesChangeEvent,
+  IStartingBalanceChangeEvent,
   ITransactionEvent,
+  ITransactionUndoEvent,
   IUseFreeParkingChangeEvent
 } from "@monopoly-money/game-state";
 import {
@@ -30,6 +34,7 @@ class GameHandler {
   public gameId: string;
   public userToken: string;
   public playerId: string;
+  public role: "player" | "banker";
   private onGameStateChange: (gameEnded: boolean) => void;
   private onDisplayMessage: (title: string, message: string, gameState: IGameState) => void;
   private events: GameEvent[] = [];
@@ -41,12 +46,14 @@ class GameHandler {
     gameId: string,
     userToken: string,
     playerId: string,
+    role: "player" | "banker",
     onGameStateChange: (gameEnded: boolean) => void,
     onDisplayMessage: (title: string, message: string, gameState: IGameState) => void
   ) {
     this.gameId = gameId;
     this.userToken = userToken;
     this.playerId = playerId;
+    this.role = role;
     this.onGameStateChange = onGameStateChange;
     this.onDisplayMessage = onDisplayMessage;
 
@@ -105,6 +112,9 @@ class GameHandler {
 
   // Identify whether this user is a banker
   public amIABanker(): boolean {
+    if (this.role === "banker") {
+      return true;
+    }
     const me = this.gameState.players.find((p) => p.playerId === this.playerId);
     return me?.banker ?? false;
   }
@@ -122,6 +132,20 @@ class GameHandler {
     this.submitEvent(event);
   }
 
+  // Propose undoing a transaction
+  public proposeTransactionUndo(originalTime: string, from: GameEntity, to: GameEntity, amount: number) {
+    const event: ITransactionUndoEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "transactionUndo",
+      originalTime,
+      from,
+      to,
+      amount
+    };
+    this.submitEvent(event);
+  }
+
   // Rename a player
   public proposePlayerNameChange(playerId: string, name: string) {
     const event: IPlayerNameChangeEvent = {
@@ -130,6 +154,18 @@ class GameHandler {
       type: "playerNameChange",
       playerId,
       name
+    };
+    this.submitEvent(event);
+  }
+
+  // Change a player's color
+  public proposePlayerColorChange(playerId: string, color: string) {
+    const event: IPlayerColorChangeEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "playerColorChange",
+      playerId,
+      color
     };
     this.submitEvent(event);
   }
@@ -174,6 +210,28 @@ class GameHandler {
       actionedBy: "", // Will be filled in by the server
       type: "showOppositionBalancesChange",
       showOppositionBalances
+    };
+    this.submitEvent(event);
+  }
+
+  // Change starting balance for new players
+  public proposeStartingBalanceChange(startingBalance: number) {
+    const event: IStartingBalanceChangeEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "startingBalanceChange",
+      startingBalance
+    };
+    this.submitEvent(event);
+  }
+
+  // Change Pass GO amount
+  public proposePassGoAmountChange(passGoAmount: number) {
+    const event: IPassGoAmountChangeEvent = {
+      time: "", // Will be filled in by the server
+      actionedBy: "", // Will be filled in by the server
+      type: "passGoAmountChange",
+      passGoAmount
     };
     this.submitEvent(event);
   }
@@ -231,13 +289,16 @@ class GameHandler {
       this.gameEnd("end");
     }
 
-    // Check if this player has been kicked
-    const inPlayers = this.gameState.players.map((p) => p.playerId).indexOf(this.playerId) !== -1;
-    if (!inPlayers) {
-      this.gameEnd("removed");
+    // Check if this player has been kicked (skip for banker-only hosts)
+    if (this.role !== "banker") {
+      const inPlayers = this.gameState.players.map((p) => p.playerId).indexOf(this.playerId) !== -1;
+      if (!inPlayers) {
+        this.gameEnd("removed");
+      }
     }
 
     // Notify the user of this class that a change has been made internally.
+    const inPlayers = this.role === "banker" ? true : this.gameState.players.map((p) => p.playerId).indexOf(this.playerId) !== -1;
     const gameEnded = incomingMessage.type === "gameEnd" || !inPlayers;
     this.onGameStateChange(gameEnded);
   }

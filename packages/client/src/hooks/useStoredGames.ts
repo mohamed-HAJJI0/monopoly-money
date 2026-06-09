@@ -11,6 +11,7 @@ interface IStoredGameInLocalStorage {
   userToken: string;
   playerId: string;
   time: string;
+  role: "player" | "banker";
 }
 
 interface IStoredGameInLocalStorageWithStatus extends IStoredGameInLocalStorage {
@@ -88,13 +89,14 @@ const useStoredGames = (getStatuses: boolean = true) => {
     });
   }, [storedGames]);
 
-  const storeGame = (gameId: string, userToken: string, playerId: string) => {
+  const storeGame = (gameId: string, userToken: string, playerId: string, role: "player" | "banker" = "player") => {
     setStoredGames([
       ...(storedGames ?? []).filter((game) => game.gameId !== gameId), // Remove current instance
       {
         gameId,
         userToken,
         playerId,
+        role,
         time: DateTime.local().toISO()
       }
     ]);

@@ -1,11 +1,174 @@
-.bank {
-  .player-and-submit-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.bank-page {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  overflow: hidden;
+
+  .left-panel {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+
+    .controls-bar {
+      flex-shrink: 0;
+      padding: 0.25rem 0;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .players-area {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+
+      &.column {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .player-card {
+          width: 100%;
+        }
+      }
+
+      &.grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.75rem;
+        align-content: start;
+
+        .player-card {
+          width: 100%;
+        }
+      }
+    }
   }
 
-  .settings-and-player-and-submit-group {
-    display: grid;
-    grid-template-columns: auto 1fr 1fr;
+  .right-panel {
+    flex: 1;
+    min-width: 260px;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .player-card {
+    background-color: var(--card-bg);
+    color: var(--body-color);
+    border-color: var(--card-border);
+    border-radius: var(--radius);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--shadow-color);
+    }
+
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+
+    .color-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .custom-action {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+  }
+
+  .free-parking-card {
+    background-color: var(--card-bg);
+    color: var(--warning);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    margin-top: 0.5rem;
+    font-weight: 600;
+  }
+
+  .log-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+
+    .log-header {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid var(--card-border);
+      background-color: rgba(255, 255, 255, 0.02);
+      flex-shrink: 0;
+    }
+
+    .log-messages {
+      flex: 1;
+      overflow: hidden;
+      padding: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .log-message {
+      padding: 3px 0;
+      border-bottom: 1px solid var(--hr-border);
+      word-break: break-word;
+
+      &.undone {
+        opacity: 0.4;
+        background-color: rgba(255, 255, 255, 0.02);
+      }
+    }
+  }
+
+  /* Mobile: stack vertically */
+  @media (max-width: 768px) {
+    position: static;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 56px);
+    overflow: visible;
+
+    .left-panel {
+      flex: none;
+      overflow: visible;
+    }
+
+    .right-panel {
+      flex: none;
+      min-width: auto;
+      max-width: none;
+      overflow: visible;
+    }
+
+    .log-area {
+      min-height: 200px;
+    }
   }
 }

@@ -1,18 +1,99 @@
 .funds {
+  padding: 1rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  .game-code-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0.6rem 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    color: var(--body-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(193, 0, 7, 0.2);
+    }
+
+    .game-code-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .game-code-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--body-color);
+    }
+  }
+
   .balance-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: 0.25rem;
+    grid-gap: 0.5rem;
 
     .connected-state-dot {
       position: absolute;
     }
   }
-}
 
-.player-card {
-  .card-body {
-    padding-top: 1.6rem !important;
-    padding-bottom: 1.6rem !important;
+  .user-card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--body-color);
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 1px var(--card-border), 0 4px 20px var(--shadow-color);
+
+    .color-dot-lg {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      &.empty {
+        background-color: var(--light);
+        border: 2px dashed var(--text-muted);
+      }
+    }
+  }
+
+  .player-card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--body-color);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--shadow-color);
+    }
+
+    .card-body {
+      padding-top: 1.4rem !important;
+      padding-bottom: 1.4rem !important;
+    }
+  }
+
+  .recent-transactions {
+    small {
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
   }
 }

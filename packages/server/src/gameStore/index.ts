@@ -4,7 +4,7 @@ import { createUniqueGameId } from "./utils";
 class GameStore {
   private games: Record<string, Game> = {};
 
-  public createGame(initialBankersName: string) {
+  public createGame(initialBankersName: string, role: "player" | "banker" = "player") {
     // Generate a game id
     const gameId = createUniqueGameId(Object.keys(this.games));
 
@@ -14,6 +14,16 @@ class GameStore {
 
     // Add the user that created this game and set them as a banker
     const game = this.games[gameId];
+
+    // Inject fake players & transactions for testing
+    game.injectFakeData();
+
+    if (role === "banker") {
+      // Banker-only host: no player account, just an admin token
+      const { userToken, playerId } = game.addBankerHost();
+      return { gameId, userToken, playerId };
+    }
+
     const { userToken, playerId } = game.addPlayer(initialBankersName);
     game.setPlayerBankerStatus(playerId, true, playerId);
 

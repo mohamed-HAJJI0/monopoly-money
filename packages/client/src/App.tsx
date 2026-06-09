@@ -68,25 +68,36 @@ const App: React.FC = () => {
     }
   }, [game]);
 
-  const onGameSetup = (gameId: string, userToken: string, playerId: string) => {
+  // Redirect banker-only hosts away from funds to bank
+  useEffect(() => {
+    if (game !== null && game.role === "banker" && path === routePaths.funds) {
+      navigate(routePaths.bank);
+    }
+  }, [game, path]);
+
+  const onGameSetup = (gameId: string, userToken: string, playerId: string, role: "player" | "banker" = "player") => {
     // Save current game for potential later use
     if (authInfo !== null) {
-      storeGame(authInfo.gameId, authInfo.userToken, authInfo.playerId);
+      storeGame(authInfo.gameId, authInfo.userToken, authInfo.playerId, authInfo.role);
     }
 
     // Setup a new game handler by setting up auth
-    initialize({ gameId, userToken, playerId });
+    initialize({ gameId, userToken, playerId, role });
 
     // Store new game details
-    storeGame(gameId, userToken, playerId);
+    storeGame(gameId, userToken, playerId, role);
 
     // Go into game
-    navigate("/funds");
+    if (role === "banker") {
+      navigate("/bank");
+    } else {
+      navigate("/funds");
+    }
   };
 
   const onGameDestroy = () => {
     if (authInfo !== null) {
-      storeGame(authInfo.gameId, authInfo.userToken, authInfo.playerId);
+      storeGame(authInfo.gameId, authInfo.userToken, authInfo.playerId, authInfo.role);
     }
     clear();
   };
@@ -101,7 +112,7 @@ const App: React.FC = () => {
     [routePaths.newGame]: () =>
       wrapRoute(routePaths.newGame, <Join newGame={true} onGameSetup={onGameSetup} />),
     [routePaths.funds]:
-      game !== null
+      game !== null && game.role !== "banker"
         ? () =>
             wrapRoute(
               routePaths.funds,
@@ -114,6 +125,7 @@ const App: React.FC = () => {
                 freeParkingBalance={game.freeParkingBalance}
                 showOppositionBalances={game.showOppositionBalances}
                 proposeTransaction={game.actions.proposeTransaction}
+                proposePlayerColorChange={game.actions.proposePlayerColorChange}
                 events={game.events}
               />
             )
@@ -127,16 +139,31 @@ const App: React.FC = () => {
                 players={game.players}
                 useFreeParking={game.useFreeParking}
                 freeParkingBalance={game.freeParkingBalance}
+                startingBalance={game.startingBalance}
+                passGoAmount={game.passGoAmount}
                 hasATransactionBeenMade={
                   game.events.filter((e) => e.type === "transaction").length > 0
                 }
+                events={game.events}
+                undoneTransactions={game.undoneTransactions}
                 proposeTransaction={game.actions.proposeTransaction}
+                proposeTransactionUndo={game.actions.proposeTransactionUndo}
+                proposePlayerColorChange={game.actions.proposePlayerColorChange}
               />
             )
         : () => <NotFound />,
     [routePaths.history]:
       game !== null
-        ? () => wrapRoute(routePaths.history, <History events={game.events} />)
+        ? () =>
+            wrapRoute(
+              routePaths.history,
+              <History
+                events={game.events}
+                role={game.role}
+                isBanker={game.isBanker}
+                proposeTransactionUndo={game.actions.proposeTransactionUndo}
+              />
+            )
         : () => <NotFound />,
     [routePaths.settings]:
       game !== null && game.isBanker
@@ -148,13 +175,22 @@ const App: React.FC = () => {
                 useFreeParking={game.useFreeParking}
                 showOppositionBalances={game.showOppositionBalances}
                 players={game.players}
+                gameId={game.gameId}
+                startingBalance={game.startingBalance}
+                passGoAmount={game.passGoAmount}
+                hasATransactionBeenMade={
+                  game.events.filter((e) => e.type === "transaction").length > 0
+                }
                 proposePlayerNameChange={game.actions.proposePlayerNameChange}
+                proposePlayerColorChange={game.actions.proposePlayerColorChange}
                 proposePlayerDelete={game.actions.proposePlayerDelete}
                 proposeGameOpenStateChange={game.actions.proposeGameOpenStateChange}
                 proposeUseFreeParkingChange={game.actions.proposeUseFreeParkingChange}
                 proposeShowOppositionBalancesChange={
                   game.actions.proposeShowOppositionBalancesChange
                 }
+                proposeStartingBalanceChange={game.actions.proposeStartingBalanceChange}
+                proposePassGoAmountChange={game.actions.proposePassGoAmountChange}
                 proposeGameEnd={game.actions.proposeGameEnd}
               />
             )
@@ -180,7 +216,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Navigation inGame={game !== null} isBanker={game?.isBanker ?? false} />
+      <Navigation inGame={game !== null} isBanker={game?.isBanker ?? false} role={game?.role ?? "player"} />
       <div className="my-3">{routeResult || <NotFound />}</div>
     </>
   );
