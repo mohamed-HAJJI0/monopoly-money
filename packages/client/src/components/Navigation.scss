@@ -44,6 +44,60 @@
     }
   }
 
+  .theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.35rem 0.7rem;
+    border-color: var(--card-border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+
+    &:hover {
+      border-color: var(--primary);
+      color: var(--body-color);
+      background: transparent;
+    }
+
+    &:focus {
+      box-shadow: none;
+    }
+
+    &::after {
+      margin-left: 4px;
+    }
+  }
+
+  .theme-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .theme-label {
+    display: none;
+
+    @media (min-width: map-get($grid-breakpoints, md)) {
+      display: inline;
+    }
+  }
+
+  .theme-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Fix dropdown menu going off-screen */
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 140px;
+  }
+
   @media (max-width: map-get($grid-breakpoints, sm)) {
     .nav-icon-button {
       padding-left: 0.5rem;
