@@ -43,10 +43,14 @@ const Bank: React.FC<IBankProps> = ({
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
   const [sendModalPlayer, setSendModalPlayer] = useState<IGameStatePlayer | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
+  const logMessagesRef = useRef<HTMLDivElement>(null);
 
-  // Scroll log to bottom on new events
+  // Scroll log to bottom on new events, but only if user is already near the bottom
   useEffect(() => {
-    if (logEndRef.current) {
+    const container = logMessagesRef.current;
+    if (!container || !logEndRef.current) return;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    if (isNearBottom) {
       logEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [events]);
@@ -93,7 +97,19 @@ const Bank: React.FC<IBankProps> = ({
     }
   };
 
-  const getLogEntry = (event: GameEvent): { text: string; color?: string; isTransaction: boolean; originalTime?: string; from?: GameEntity; to?: GameEntity; amount?: number; isUndone: boolean } | null => {
+  const getLogEntry = (event: GameEvent): {
+    text: React.ReactNode;
+    badge?: string;
+    badgeClass?: string;
+    icon: string;
+    color?: string;
+    isTransaction: boolean;
+    originalTime?: string;
+    from?: GameEntity;
+    to?: GameEntity;
+    amount?: number;
+    isUndone: boolean;
+  } | null => {
     const time = DateTime.fromISO(event.time).toFormat("h:mm a");
     switch (event.type) {
       case "transaction": {
@@ -104,7 +120,17 @@ const Bank: React.FC<IBankProps> = ({
         const fromPlayer = players.find((p) => p.playerId === event.from);
         const isUndone = undoneTransactions.includes(event.time);
         return {
-          text: `[${time}] ${fromName} → ${toName}: ${formatCurrency(event.amount)}`,
+          icon: "💸",
+          badge: time,
+          badgeClass: "transaction",
+          text: (
+            <span className={isUndone ? "log-text-strike" : undefined}>
+              <strong>{fromName}</strong>
+              <span className="log-arrow"> → </span>
+              <strong>{toName}</strong>
+              <span className="log-amount"> {formatCurrency(event.amount)}</span>
+            </span>
+          ),
           color: fromPlayer?.color,
           isTransaction: true,
           originalTime: event.time,
@@ -120,30 +146,149 @@ const Bank: React.FC<IBankProps> = ({
         const toName =
           event.to === "bank" ? "Bank" : event.to === "freeParking" ? "Free Parking" : players.find((p) => p.playerId === event.to)?.name ?? "?";
         return {
-          text: `[${time}] ↩ UNDO: ${fromName} → ${toName}: ${formatCurrency(event.amount)}`,
+          icon: "↩",
+          badge: time,
+          badgeClass: "undo",
+          text: (
+            <span>
+              Undo: <strong>{fromName}</strong>
+              <span className="log-arrow"> → </span>
+              <strong>{toName}</strong>
+              <span className="log-amount"> {formatCurrency(event.amount)}</span>
+            </span>
+          ),
           color: "#9e9e9e",
           isTransaction: false,
           isUndone: false
         };
       }
       case "playerJoin":
-        return { text: `[${time}] ${event.name} joined`, isTransaction: false, isUndone: false };
+        return {
+          icon: "👤",
+          badge: time,
+          badgeClass: "info",
+          text: <span><strong>{event.name}</strong> joined the game</span>,
+          color: event.color,
+          isTransaction: false,
+          isUndone: false
+        };
       case "playerDelete": {
         const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
-        return { text: `[${time}] ${name} removed`, isTransaction: false, isUndone: false };
+        return {
+          icon: "🗑",
+          badge: time,
+          badgeClass: "warning",
+          text: <span><strong>{name}</strong> was removed</span>,
+          isTransaction: false,
+          isUndone: false
+        };
       }
       case "playerNameChange": {
         const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
-        return { text: `[${time}] ${name} renamed`, isTransaction: false, isUndone: false };
+        return {
+          icon: "✏️",
+          badge: time,
+          badgeClass: "info",
+          text: <span><strong>{name}</strong> changed their name</span>,
+          isTransaction: false,
+          isUndone: false
+        };
       }
       case "playerColorChange": {
         const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
-        return { text: `[${time}] ${name} changed color`, isTransaction: false, isUndone: false };
+        return {
+          icon: "🎨",
+          badge: time,
+          badgeClass: "info",
+          text: <span><strong>{name}</strong> changed color</span>,
+          color: event.color,
+          isTransaction: false,
+          isUndone: false
+        };
       }
       case "startingBalanceChange":
-        return { text: `[${time}] Starting balance set to ${formatCurrency(event.startingBalance)}`, isTransaction: false, isUndone: false };
+        return {
+          icon: "🏦",
+          badge: time,
+          badgeClass: "settings",
+          text: (
+            <span>
+              Starting balance set to <strong>{formatCurrency(event.startingBalance)}</strong>
+            </span>
+          ),
+          isTransaction: false,
+          isUndone: false
+        };
       case "passGoAmountChange":
-        return { text: `[${time}] Pass GO set to ${formatCurrency(event.passGoAmount)}`, isTransaction: false, isUndone: false };
+        return {
+          icon: "🎲",
+          badge: time,
+          badgeClass: "settings",
+          text: (
+            <span>
+              Pass GO set to <strong>{formatCurrency(event.passGoAmount)}</strong>
+            </span>
+          ),
+          isTransaction: false,
+          isUndone: false
+        };
+      case "playerBankerStatusChange": {
+        const name = players.find((p) => p.playerId === event.playerId)?.name ?? "?";
+        return {
+          icon: "🎩",
+          badge: time,
+          badgeClass: "info",
+          text: (
+            <span>
+              <strong>{name}</strong> {event.isBanker ? "was made a banker" : "is no longer a banker"}
+            </span>
+          ),
+          isTransaction: false,
+          isUndone: false
+        };
+      }
+      case "gameOpenStateChange":
+        return {
+          icon: "🔓",
+          badge: time,
+          badgeClass: "settings",
+          text: (
+            <span>
+              Game {event.open ? <strong>opened</strong> : <strong>closed</strong>} to new players
+            </span>
+          ),
+          isTransaction: false,
+          isUndone: false
+        };
+      case "useFreeParkingChange":
+        return {
+          icon: "🚗",
+          badge: time,
+          badgeClass: "settings",
+          text: (
+            <span>
+              Free Parking house rule {event.useFreeParking ? <strong>enabled</strong> : <strong>disabled</strong>}
+            </span>
+          ),
+          isTransaction: false,
+          isUndone: false
+        };
+      case "showOppositionBalancesChange":
+        return {
+          icon: "👁",
+          badge: time,
+          badgeClass: "settings",
+          text: (
+            <span>
+              Opposition balances {event.showOppositionBalances ? <strong>shown</strong> : <strong>hidden</strong>}
+            </span>
+          ),
+          isTransaction: false,
+          isUndone: false
+        };
+      case "playerConnectionChange":
+        // Don't show connection events in the live bank log to reduce noise
+        return null;
       default:
         return null;
     }
@@ -152,6 +297,9 @@ const Bank: React.FC<IBankProps> = ({
   const logEntries = events
     .map((e) => getLogEntry(e))
     .filter((e): e is NonNullable<ReturnType<typeof getLogEntry>> => e !== null);
+
+  const transactionCount = logEntries.filter((e) => e.isTransaction && !e.isUndone).length;
+  const undoneCount = logEntries.filter((e) => e.isTransaction && e.isUndone).length;
 
   const renderPlayerCard = (player: IGameStatePlayer) => {
     const inputVal = customInputs[player.playerId] || "";
@@ -328,29 +476,57 @@ const Bank: React.FC<IBankProps> = ({
         <div className="log-area">
           <div className="log-header d-flex justify-content-between align-items-center">
             <strong className="small">Transaction Log</strong>
-            <span className="text-muted small">{logEntries.length} events</span>
+            <div className="d-flex align-items-center gap-2">
+              {transactionCount > 0 && (
+                <span className="log-stat text-success small">{transactionCount} tx</span>
+              )}
+              {undoneCount > 0 && (
+                <span className="log-stat text-muted small">{undoneCount} undone</span>
+              )}
+              <span className="text-muted small">{logEntries.length} events</span>
+            </div>
           </div>
-          <div className="log-messages">
+          <div className="log-messages" ref={logMessagesRef}>
             {logEntries.length === 0 ? (
-              <div className="text-muted text-center small">No transactions yet</div>
+              <div className="log-empty text-muted text-center small">
+                <div className="log-empty-icon">📜</div>
+                <div>No events yet.</div>
+                <div className="log-empty-hint">
+                  Transactions, player joins, and settings changes will appear here.
+                </div>
+              </div>
             ) : (
               logEntries.map((entry, idx) => (
                 <div
                   key={idx}
-                  className={`log-message ${entry.isUndone ? "undone" : ""}`}
-                  style={entry.color ? { borderLeft: `3px solid ${entry.color}`, paddingLeft: 6 } : {}}
+                  className={`log-message ${entry.isUndone ? "undone" : ""} ${entry.isTransaction ? "is-transaction" : ""}`}
+                  style={entry.color ? { borderLeftColor: entry.color } : undefined}
                 >
-                  <div className="d-flex justify-content-between align-items-center">
-                    <small style={entry.isUndone ? { textDecoration: "line-through", opacity: 0.6 } : {}}>
-                      {entry.text}
-                    </small>
+                  <div className="log-message-inner">
+                    <span className="log-icon" aria-hidden="true">
+                      {entry.icon}
+                    </span>
+                    <div className="log-body">
+                      <div className="log-meta">
+                        {entry.badge && (
+                          <span className={`log-badge ${entry.badgeClass ?? ""}`}>{entry.badge}</span>
+                        )}
+                      </div>
+                      <div className="log-text">{entry.text}</div>
+                    </div>
                     {entry.isTransaction && !entry.isUndone && entry.originalTime && entry.from !== undefined && entry.to !== undefined && entry.amount !== undefined && (
                       <Button
                         variant="outline-danger"
                         size="sm"
-                        className="ml-2 py-0 px-1"
-                        style={{ fontSize: "0.65rem", lineHeight: 1 }}
-                        onClick={() => proposeTransactionUndo(entry.originalTime!, entry.from!, entry.to!, entry.amount!)}
+                        className="log-undo-btn"
+                        onClick={() =>
+                          proposeTransactionUndo(
+                            entry.originalTime!,
+                            entry.from!,
+                            entry.to!,
+                            entry.amount!
+                          )
+                        }
                       >
                         ↩ Undo
                       </Button>

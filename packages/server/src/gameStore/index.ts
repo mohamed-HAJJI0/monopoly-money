@@ -1,10 +1,15 @@
-import Game from "./Game";
+import Game, { BANKER_HOST_PLAYER_ID } from "./Game";
 import { createUniqueGameId } from "./utils";
 
 class GameStore {
   private games: Record<string, Game> = {};
 
-  public createGame(initialBankersName: string, role: "player" | "banker" = "player") {
+  public createGame(
+    initialBankersName: string,
+    role: "player" | "banker" = "player",
+    startingBalance?: number,
+    passGoAmount?: number
+  ) {
     // Generate a game id
     const gameId = createUniqueGameId(Object.keys(this.games));
 
@@ -15,8 +20,12 @@ class GameStore {
     // Add the user that created this game and set them as a banker
     const game = this.games[gameId];
 
-    // Inject fake players & transactions for testing
+    // Inject fake players & transactions for testing (only if enabled in env)
     game.injectFakeData();
+
+    // Apply initial settings so that any subsequently added players use the configured defaults.
+    // The game host (banker-host id) is treated as the actor for these initial setup events.
+    game.configureInitialSettings(startingBalance, passGoAmount, BANKER_HOST_PLAYER_ID);
 
     if (role === "banker") {
       // Banker-only host: no player account, just an admin token

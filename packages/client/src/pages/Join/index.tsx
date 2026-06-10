@@ -12,6 +12,9 @@ interface IJoinProps {
   onGameSetup: (gameId: string, userToken: string, playerId: string, role: "player" | "banker") => void;
 }
 
+const DEFAULT_STARTING_BALANCE = 1500;
+const DEFAULT_PASS_GO_AMOUNT = 200;
+
 const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   const title = newGame ? "Create Game" : "Join Game";
 
@@ -20,6 +23,8 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
   const [gameId, setGameId] = useState(getGameIdFromQueryString() ?? "");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"player" | "banker">("player");
+  const [startingBalance, setStartingBalance] = useState<number | "">(DEFAULT_STARTING_BALANCE);
+  const [passGoAmount, setPassGoAmount] = useState<number | "">(DEFAULT_PASS_GO_AMOUNT);
 
   const [gameError, setGameError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -42,7 +47,9 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
 
       // Create game
       setLoading(true);
-      createGame(name, role)
+      const startBal = typeof startingBalance === "number" ? startingBalance : DEFAULT_STARTING_BALANCE;
+      const passGo = typeof passGoAmount === "number" ? passGoAmount : DEFAULT_PASS_GO_AMOUNT;
+      createGame(name, role, startBal, passGo)
         .then((result) => {
           onGameSetup(result.gameId, result.userToken, result.playerId, role);
           trackGameCreated();
@@ -160,6 +167,46 @@ const Join: React.FC<IJoinProps> = ({ newGame, onGameSetup }) => {
               : "You won't be a player — you'll only manage the bank."}
           </Form.Text>
         </Form.Group>
+      )}
+
+      {newGame && (
+        <div className="text-left">
+          <Form.Group className="mb-3">
+            <Form.Label>Starting Balance</Form.Label>
+            <Form.Control
+              type="number"
+              min={0}
+              value={startingBalance}
+              onChange={(e) => {
+                const val = e.target.value === "" ? "" : parseInt(e.target.value, 10);
+                setStartingBalance(isNaN(val as number) ? "" : val);
+              }}
+              className="text-center"
+              style={{ maxWidth: 180, margin: "0 auto" }}
+            />
+            <Form.Text style={{ color: "var(--text-muted)" }}>
+              Default cash each player starts with.
+            </Form.Text>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Pass GO Amount</Form.Label>
+            <Form.Control
+              type="number"
+              min={0}
+              value={passGoAmount}
+              onChange={(e) => {
+                const val = e.target.value === "" ? "" : parseInt(e.target.value, 10);
+                setPassGoAmount(isNaN(val as number) ? "" : val);
+              }}
+              className="text-center"
+              style={{ maxWidth: 180, margin: "0 auto" }}
+            />
+            <Form.Text style={{ color: "var(--text-muted)" }}>
+              Cash given when a player passes GO.
+            </Form.Text>
+          </Form.Group>
+        </div>
       )}
 
       <Button block variant="primary" onClick={onSubmit} disabled={loading} className="mt-3">

@@ -55,7 +55,7 @@
   .right-panel {
     flex: 1;
     min-width: 260px;
-    max-width: 380px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -124,25 +124,156 @@
       border-bottom: 1px solid var(--card-border);
       background-color: rgba(255, 255, 255, 0.02);
       flex-shrink: 0;
+
+      .log-stat {
+        background: rgba(40, 167, 69, 0.12);
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        font-weight: 500;
+      }
+
+      .log-stat.text-muted {
+        background: rgba(150, 150, 150, 0.12);
+      }
     }
 
     .log-messages {
       flex: 1;
-      overflow: hidden;
-      padding: 0.6rem;
+      overflow-y: auto;
+      padding: 0.5rem;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+    }
+
+    .log-empty {
+      margin: auto;
+      padding: 2rem 1rem;
+      opacity: 0.8;
+
+      .log-empty-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .log-empty-hint {
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        opacity: 0.8;
+      }
     }
 
     .log-message {
-      padding: 3px 0;
-      border-bottom: 1px solid var(--hr-border);
-      word-break: break-word;
+      padding: 0.35rem 0.5rem;
+      margin-bottom: 0.35rem;
+      border-radius: 6px;
+      border-left: 3px solid transparent;
+      background-color: rgba(255, 255, 255, 0.02);
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      &.is-transaction {
+        background-color: rgba(255, 255, 255, 0.04);
+      }
 
       &.undone {
-        opacity: 0.4;
+        opacity: 0.55;
         background-color: rgba(255, 255, 255, 0.02);
+      }
+
+      .log-message-inner {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .log-icon {
+        flex-shrink: 0;
+        width: 20px;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-top: 0.1rem;
+      }
+
+      .log-body {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .log-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.15rem;
+      }
+
+      .log-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        background-color: rgba(150, 150, 150, 0.15);
+        color: var(--text-muted);
+
+        &.transaction {
+          background-color: rgba(40, 167, 69, 0.15);
+          color: #28a745;
+        }
+
+        &.undo {
+          background-color: rgba(220, 53, 69, 0.15);
+          color: #dc3545;
+        }
+
+        &.info {
+          background-color: rgba(23, 162, 184, 0.15);
+          color: #17a2b8;
+        }
+
+        &.settings {
+          background-color: rgba(111, 66, 193, 0.15);
+          color: #6f42c1;
+        }
+
+        &.warning {
+          background-color: rgba(255, 193, 7, 0.15);
+          color: #ffc107;
+        }
+      }
+
+      .log-text {
+        font-size: 0.85rem;
+        line-height: 1.35;
+        color: var(--body-color);
+        word-break: break-word;
+      }
+
+      .log-text-strike {
+        text-decoration: line-through;
+        opacity: 0.65;
+      }
+
+      .log-arrow {
+        opacity: 0.7;
+        margin: 0 0.15rem;
+      }
+
+      .log-amount {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .log-undo-btn {
+        flex-shrink: 0;
+        font-size: 0.65rem;
+        line-height: 1;
+        padding: 0.2rem 0.4rem;
+        margin-top: 0.1rem;
       }
     }
   }
@@ -168,7 +299,7 @@
     }
 
     .log-area {
-      min-height: 200px;
+      min-height: 320px;
     }
   }
 }

@@ -3,10 +3,12 @@ import {
   defaultGameState,
   GameEvent,
   IGameState,
+  IPassGoAmountChangeEvent,
   IPlayerBankerStatusChangeEvent,
   IPlayerColorChangeEvent,
   IPlayerConnectionChangeEvent,
   IPlayerJoinEvent,
+  IStartingBalanceChangeEvent,
   PlayerId
 } from "@monopoly-money/game-state";
 import * as websocket from "ws";
@@ -16,12 +18,13 @@ import {
   INewEventMessage,
   OutgoingMessage
 } from "../api/dto";
+import config from "../config";
 import { generateRandomId, generateTimeBasedId, getCurrentTime } from "./utils";
 
 export const BANKER_HOST_PLAYER_ID = "banker-host";
 
 // === FAKE DATA FOR TESTING ===
-const FAKE_DATA_ENABLED = true;
+const FAKE_DATA_ENABLED = config.server.inject_fake_data;
 const FAKE_PLAYER_COUNT = 6;
 const FAKE_PLAYER_NAMES = ["Alice", "Bob", "Charlie", "Diana", "Evan", "Fiona", "George", "Hannah", "Ian", "Julia", "Kevin", "Luna"];
 const FAKE_COLORS = ["#e6194b", "#3cb44b", "#ffe119", "#0082c8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#d2f53c", "#fabebe"];
@@ -100,6 +103,34 @@ export default class Game {
       };
       this.events.push(txEvent);
       this.gameState = calculateGameState([txEvent], this.gameState);
+    }
+  };
+
+  // Configure initial settings for a newly created game
+  public configureInitialSettings = (
+    startingBalance: number | undefined,
+    passGoAmount: number | undefined,
+    actionedByPlayerId: PlayerId
+  ) => {
+    if (startingBalance !== undefined && startingBalance >= 0) {
+      const event: IStartingBalanceChangeEvent = {
+        type: "startingBalanceChange",
+        time: getCurrentTime(),
+        actionedBy: actionedByPlayerId,
+        startingBalance
+      };
+      this.events.push(event);
+      this.gameState = calculateGameState([event], this.gameState);
+    }
+    if (passGoAmount !== undefined && passGoAmount >= 0) {
+      const event: IPassGoAmountChangeEvent = {
+        type: "passGoAmountChange",
+        time: getCurrentTime(),
+        actionedBy: actionedByPlayerId,
+        passGoAmount
+      };
+      this.events.push(event);
+      this.gameState = calculateGameState([event], this.gameState);
     }
   };
 

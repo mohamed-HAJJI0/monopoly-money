@@ -8,9 +8,14 @@ const router = express.Router();
 
 // Create a new game
 router.post("/", (req, res) => {
-  const { name, role } = req.body as ICreateGameRequest;
+  const { name, role, startingBalance, passGoAmount } = req.body as ICreateGameRequest;
 
-  const { gameId, userToken, playerId } = gameStore.createGame(name, role);
+  const { gameId, userToken, playerId } = gameStore.createGame(
+    name,
+    role,
+    startingBalance,
+    passGoAmount
+  );
 
   const response: IJoinGameResponse = { gameId, userToken, playerId };
   res.json(response);
