@@ -17,9 +17,12 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, sender, players,
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("");
 
+  const senderBalance = sender?.balance ?? 0;
+  const numAmount = amount === "" ? 0 : parseInt(amount, 10);
+  const isValidAmount = !isNaN(numAmount) && numAmount > 0 && numAmount <= senderBalance;
+
   const handleSend = () => {
-    const numAmount = parseInt(amount, 10);
-    if (selectedPlayerId && numAmount > 0) {
+    if (selectedPlayerId && isValidAmount) {
       onSend(selectedPlayerId, numAmount);
       setSelectedPlayerId(null);
       setAmount("");
@@ -41,6 +44,13 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, sender, players,
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {sender && (
+          <div className="mb-3 text-center">
+            <small className="text-muted">Available balance:</small>
+            <div className="font-weight-bold">{formatCurrency(senderBalance)}</div>
+          </div>
+        )}
+
         <Form.Group>
           <Form.Label>Select Recipient</Form.Label>
           <div className="d-flex flex-wrap gap-2 mb-3">
@@ -62,16 +72,21 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, sender, players,
         <Form.Group>
           <Form.Label>Amount</Form.Label>
           <div className="d-flex flex-wrap gap-2 mb-2">
-            {presetAmounts.map((val) => (
-              <Button
-                key={val}
-                variant={amount === val.toString() ? "success" : "outline-success"}
-                onClick={() => selectAmount(val)}
-                className="m-1"
-              >
-                {formatCurrency(val)}
-              </Button>
-            ))}
+            {presetAmounts.map((val) => {
+              const affordable = senderBalance >= val;
+              return (
+                <Button
+                  key={val}
+                  variant={amount === val.toString() ? "success" : "outline-success"}
+                  onClick={() => selectAmount(val)}
+                  className="m-1"
+                  disabled={!affordable}
+                  title={!affordable ? "Insufficient balance" : undefined}
+                >
+                  {formatCurrency(val)}
+                </Button>
+              );
+            })}
           </div>
           <Form.Control
             type="number"
@@ -79,8 +94,15 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, sender, players,
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             min={1}
+            max={senderBalance > 0 ? senderBalance : undefined}
             className="text-center"
+            isInvalid={amount !== "" && (isNaN(numAmount) || numAmount <= 0 || numAmount > senderBalance)}
           />
+          {amount !== "" && numAmount > senderBalance && (
+            <Form.Control.Feedback type="invalid">
+              Amount exceeds available balance of {formatCurrency(senderBalance)}.
+            </Form.Control.Feedback>
+          )}
         </Form.Group>
       </Modal.Body>
       <Modal.Footer>
@@ -90,7 +112,7 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({ show, sender, players,
         <Button
           variant="primary"
           onClick={handleSend}
-          disabled={!selectedPlayerId || !amount || parseInt(amount, 10) <= 0}
+          disabled={!selectedPlayerId || !isValidAmount}
         >
           Send
         </Button>

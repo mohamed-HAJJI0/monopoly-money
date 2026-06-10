@@ -1,6 +1,7 @@
+import { calculateGameState, GameEvent, IGameState } from "@monopoly-money/game-state";
 import * as websocket from "ws";
 import gameStore from "../../gameStore";
-import { BANKER_HOST_PLAYER_ID } from "../../gameStore/Game";
+import Game, { BANKER_HOST_PLAYER_ID } from "../../gameStore/Game";
 import { IncomingMessage } from "../dto";
 import { IUserData } from "../types";
 
@@ -22,6 +23,21 @@ const isAuthenticated = (ws: websocket, { gameId, userToken }: IUserData): boole
     return false;
   }
   return true;
+};
+
+// Check if applying an event would cause any player to have a negative balance
+const wouldCauseNegativeBalance = (game: Game, event: GameEvent): boolean => {
+  if (event.type !== "transaction" && event.type !== "transactionUndo") {
+    return false;
+  }
+  const currentState = game.getGameState();
+  let nextState: IGameState;
+  try {
+    nextState = calculateGameState([event], currentState);
+  } catch {
+    return true;
+  }
+  return nextState.players.some((p) => p.balance < 0);
 };
 
 export const onMessageStreamClosed = (ws: websocket, userData: IUserData) => {
@@ -100,6 +116,10 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
         if (playerId === BANKER_HOST_PLAYER_ID && event.from === BANKER_HOST_PLAYER_ID) {
           return;
         }
+        // Reject transactions that would put any player into negative balance
+        if (wouldCauseNegativeBalance(game, event)) {
+          return;
+        }
         break;
       case "playerNameChange":
         if (!isPlayerBanker && playerId !== event.playerId) {
@@ -140,6 +160,10 @@ export const proposeEvent: MessageHandler = (ws, { gameId, userToken }, message)
         // Check if the transaction has already been undone
         if (game.getGameState().undoneTransactions.includes(event.originalTime)) {
           return; // Cannot undo a transaction twice
+        }
+        // Reject undoing a transaction if it would cause any player to go negative
+        if (wouldCauseNegativeBalance(game, event)) {
+          return;
         }
         break;
       case "playerConnectionChange":

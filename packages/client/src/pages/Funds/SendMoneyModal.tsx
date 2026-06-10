@@ -113,16 +113,21 @@ const SendMoneyModal: React.FC<ISendMoneyModalProps> = ({
           <div className="mb-3">
             <div className="small text-muted text-center mb-2">Recent amounts</div>
             <div className="d-flex justify-content-center flex-wrap gap-2">
-              {recentAmounts.map((amt) => (
-                <Button
-                  key={amt}
-                  variant={amount === amt ? "primary" : "outline-primary"}
-                  size="sm"
-                  onClick={() => setAmount(amt)}
-                >
-                  {formatCurrency(amt)}
-                </Button>
-              ))}
+              {recentAmounts.map((amt) => {
+                const affordable = balance >= amt;
+                return (
+                  <Button
+                    key={amt}
+                    variant={amount === amt ? "primary" : "outline-primary"}
+                    size="sm"
+                    onClick={() => setAmount(amt)}
+                    disabled={!affordable}
+                    title={!affordable ? "Insufficient balance" : undefined}
+                  >
+                    {formatCurrency(amt)}
+                  </Button>
+                );
+              })}
             </div>
           </div>
         )}

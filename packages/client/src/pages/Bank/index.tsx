@@ -367,6 +367,8 @@ const Bank: React.FC<IBankProps> = ({
                 size={buttonSize}
                 onClick={() => handleDeduction(player.playerId, amt)}
                 className="m-1"
+                disabled={player.balance < amt}
+                title={player.balance < amt ? "Insufficient balance" : undefined}
               >
                 -{formatCurrency(amt)}
               </Button>
@@ -376,6 +378,8 @@ const Bank: React.FC<IBankProps> = ({
               size={buttonSize}
               onClick={() => setSendModalPlayer(player)}
               className="m-1"
+              disabled={player.balance <= 0}
+              title={player.balance <= 0 ? "Insufficient balance" : undefined}
             >
               Send
             </Button>
@@ -405,7 +409,16 @@ const Bank: React.FC<IBankProps> = ({
               variant="danger"
               size={buttonSize}
               onClick={() => handleCustomTake(player.playerId)}
-              disabled={!inputVal || parseInt(inputVal, 10) <= 0}
+              disabled={
+                !inputVal ||
+                parseInt(inputVal, 10) <= 0 ||
+                parseInt(inputVal, 10) > player.balance
+              }
+              title={
+                inputVal && parseInt(inputVal, 10) > player.balance
+                  ? "Insufficient balance"
+                  : undefined
+              }
             >
               Take
             </Button>
